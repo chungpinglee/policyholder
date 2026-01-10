@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>長照守護規劃專業簡報</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        :root { 
+            --header-bg: #002B5B; 
+            --category-bg: #006400; /* 分類：深綠色 */
+            --link-bg: #5D4037;     /* 連結：咖啡色 */
+            --bg-color: #f5f5f5; 
+        }
+        body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; }
+        
+        /* 頁首樣式 */
+        .header { background-color: var(--header-bg); color: white; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 18px; font-weight: bold; user-select: none; }
+        .trigger-zone { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 50%; }
+        
+        .container { padding: 20px 15px; max-width: 600px; margin: auto; }
+
+        /* 管理面板樣式 */
+        #admin-panel { display: none; background: #fff; border: 3px solid #e67e22; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .admin-input-group { margin-bottom: 12px; padding: 10px; border-bottom: 1px solid #eee; }
+        .admin-input-group:last-of-type { border-bottom: none; }
+        .admin-input-group label { display: block; font-size: 13px; margin-bottom: 3px; color: #444; font-weight: bold; }
+        .admin-input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 15px; margin-bottom: 5px; }
+        .save-btn { width: 100%; background: #e67e22; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        
+        /* 分類卡片樣式 */
+        .topic-card { margin-bottom: 20px; }
+        .topic-header { 
+            background-color: var(--category-bg); color: white; padding: 16px 20px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; position: relative; z-index: 1; 
+        }
+        .topic-header:hover { background-color: #FF0000; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .topic-header h2 { margin: 0; font-size: 17px; color: white; }
+
+        .topic-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .content-inner { padding: 15px; background: #fff; border-radius: 0 0 10px 10px; border: 1px solid #ddd; border-top: none; }
+        
+        .intro-text { background: #f9f9f9; padding: 12px; border-radius: 8px; border-left: 4px solid var(--category-bg); margin-bottom: 10px; font-size: 14px; color: #555; line-height: 1.5; }
+
+        /* 超連結項目樣式 */
+        .item-link { 
+            display: block; background-color: var(--link-bg); color: white !important; padding: 14px 20px; margin: 12px 0; border-radius: 8px; text-decoration: none; font-size: 14px; transition: all 0.3s ease; text-align: center; font-weight: 500;
+        }
+        .item-link:hover { background-color: #0000FF; transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; }
+        
+        .btn-line { display: block; background: #06c755; color: white; text-align: center; padding: 18px; border-radius: 50px; text-decoration: none; font-weight: bold; margin: 30px 10px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 id="main-title">長照守護：讓愛不成為負擔</h1>
+        <div class="trigger-zone" id="unlock-trigger">🔒</div>
+    </div>
+
+    <div class="container">
+        <!-- 八大方案管理後台 -->
+        <div id="admin-panel" style="display: none;" style="display: none;">
+            <div style="color:#e67e22; font-weight:bold; text-align:center; margin-bottom:15px; font-size:18px;">🛠 八大方案管理後台</div>
+            <div class="admin-input-group"><label>客戶姓名</label><input type="text" id="client-name" placeholder="王大同"></div>
+            
+            <div class="admin-input-group"><label>方案一</label><input type="text" id="name-1" placeholder="名稱"><input type="text" id="url-1" placeholder="網址"></div>
+            <div class="admin-input-group"><label>方案二</label><input type="text" id="name-2" placeholder="名稱"><input type="text" id="url-2" placeholder="網址"></div>
+            <div class="admin-input-group"><label>方案三</label><input type="text" id="name-3" placeholder="名稱"><input type="text" id="url-3" placeholder="網址"></div>
+            <div class="admin-input-group"><label>方案四</label><input type="text" id="name-4" placeholder="名稱"><input type="text" id="url-4" placeholder="網址"></div>
+            <div class="admin-input-group"><label>方案五</label><input type="text" id="name-5" placeholder="名稱"><input type="text" id="url-5" placeholder="網址"></div>
+            <div class="admin-input-group"><label>方案六</label><input type="text" id="name-6" placeholder="名稱"><input type="text" id="url-6" placeholder="網址"></div>
+            <div class="admin-input-group"><label>方案七</label><input type="text" id="name-7" placeholder="名稱"><input type="text" id="url-7" placeholder="網址"></div>
+            <div class="admin-input-group"><label>方案八</label><input type="text" id="name-8" placeholder="名稱"><input type="text" id="url-8" placeholder="網址"></div>
+            
+            <button class="save-btn" onclick="generateClientFile()">💾 儲存並產製客戶檔案</button>
+            <button onclick="document.getElementById('admin-panel').style.display='none'" style="width:100%; background:#777; color:white; border:none; padding:10px; border-radius:8px; margin-top:10px; cursor:pointer;">隱鎖後台面板</button>
+        </div>
+
+        <div id="dynamic-content"><div class="topic-card"><div class="topic-header" onclick="toggleTopic(this)"><h2>失智症：不是老年的專利</h2><div>▼</div></div><div class="topic-content"><div class="content-inner"><div class="intro-text">失智症不許多是記憶力衰退，它是腦部功能的退化。</div><a href="https://youtu.be/E35_pNM3ShM?si=IrPwYFK-VA1TpOI0" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 帕金森、阿茲海默症有何不同？</a><a href="https://youtu.be/nojHha6UPrs?si=7PPRJmGkA9IymB2d" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 失智不是老人專利，青壯族不能輕忽</a></div></div></div><div class="topic-card"><div class="topic-header" onclick="toggleTopic(this)"><h2>名人談長照：感性分享</h2><div>▼</div></div><div class="topic-content"><div class="content-inner"><div class="intro-text">看看名人們如何陪伴家人走過這段艱辛的長照之路。</div><a href="https://youtu.be/82_WGqLzvSQ?si=iCnh3Z5BXiG6QD6s" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 失智怎麼「伴」：郎祖筠 篇</a><a href="https://youtu.be/arWkQfBBGzw?si=x1lZ1jxSG5YV8OZt" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 失智怎麼「伴」：Ella 篇</a></div></div></div><div class="topic-card"><div class="topic-header" onclick="toggleTopic(this)"><h2>照顧者心聲：一人病全家倒</h2><div>▼</div></div><div class="topic-content"><div class="content-inner"><div class="intro-text">「如果我也倒下了，誰來照顧他？」</div><a href="https://youtu.be/F0niMbuREMM?si=2jxJpdIE-xuSB7o4" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 長期照顧失智父，我哥累垮先走了</a><a href="https://youtu.be/PBe-FbksrE0?si=6KX3tX-h-imD_tMN" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 別讓長照悲歌成為我們的未來</a></div></div></div><div class="topic-card"><div class="topic-header" onclick="toggleTopic(this)"><h2>長照開銷與補助全攻略</h2><div>▼</div></div><div class="topic-content"><div class="content-inner"><div class="intro-text">了解政府資源，才能把錢花在刀口上。</div><a href="https://www.nursing.com.tw/%E9%95%B7%E7%85%A7%E6%9C%8D%E5%8B%99%E9%A0%85%E7%9B%AE%E8%B2%BB%E7%94%A8/" target="_blank" class="item-link" onclick="event.stopPropagation()">🌐 各種長期照顧費用及補助表</a><a href="https://www.youtube.com/watch?v=NWUw9zl5W_Y&amp;t=44s" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 外籍看護與長照3.0資源搭配</a><a href="https://www.youtube.com/watch?v=J2R8OL8_C88" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 住宿型長期照顧機構簡介及費用</a><a href="https://www.airltc.com/" target="_blank" class="item-link" onclick="event.stopPropagation()">🌐 ALTC 長照網（查詢機構）</a><a href="https://1966.gov.tw/LTC/np-6450-207.html" target="_blank" class="item-link" onclick="event.stopPropagation()">🌐 衛福部長期照顧專區</a></div></div></div><div class="topic-card"><div class="topic-header" onclick="toggleTopic(this)"><h2>長期照顧險選擇與啟動條件</h2><div>▼</div></div><div class="topic-content"><div class="content-inner"><div class="intro-text">了解長照險與失能險的啟動門檻與理賠條件，確保保障能適時啟動。</div><a href="https://www.youtube.com/watch?v=zXg-RXR8mw4" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 失能險、長照險差異及理賠說明</a><a href="https://youtu.be/dlmThO8gUHw?si=Rr3e-0CWBOdLdSla" target="_blank" class="item-link" onclick="event.stopPropagation()">🎬 長輩失智篩檢評量表</a></div></div></div><div class="topic-card active"><div class="topic-header" onclick="toggleTopic(this)"><h2>未雨綢繆：保險方案選擇</h2><div>▼</div></div><div class="topic-content" style="max-height: 86px;"><div class="content-inner"><div class="intro-text">根據您的家庭狀況，為您規劃最適切的長照與醫療防護網。</div></div></div></div></div>
+
+        <a href="https://line.me/R/ti/p/~0932218851" class="btn-line">LINE 諮詢 仲平</a>
+    </div>
+
+    <script>
+        const SALT = "NS-LTC-2026";
+        const _CN = "長期照顧險分類"; 
+        const _MODE = "MASTER";
+        const _D = ["U2FsdGVkX1+5JBCDitYWBqMExa0NoqUk8E8GO4zUBvhFlZifeclRY1ZLSH8mvZixQGUInqN51hyJnGP1uZXt7RXDPY9+SUPlZkpTekHJKt3U1dom7+7G5poZZw9AUXxaasjEUSPfgUOGM62qxnj6A3K6Dlh1KmjF8cOyh+5Vk6lcNv5RIX3hRJdU94q3JyTp", "", "", "", "", "", "", ""]; 
+        const _N = ["商品", "", "", "", "", "", "", ""];
+
+        let lastTap = 0;
+        let tapCount = 0;
+        document.getElementById('unlock-trigger').addEventListener('click', function() {
+            const currentTime = new Date().getTime();
+            const tapLen = currentTime - lastTap;
+            if (tapLen < 500 && tapLen > 0) { tapCount++; } else { tapCount = 1; }
+            lastTap = currentTime;
+            if (tapCount === 5) {
+                const panel = document.getElementById('admin-panel');
+                panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                tapCount = 0;
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        });
+
+        const MAPPING = {
+            "🎬 帕金森、阿茲海默症有何不同？": "https://youtu.be/E35_pNM3ShM?si=IrPwYFK-VA1TpOI0",
+            "🎬 失智不是老人專利，青壯族不能輕忽": "https://youtu.be/nojHha6UPrs?si=7PPRJmGkA9IymB2d",
+            "🎬 失智怎麼「伴」：郎祖筠 篇": "https://youtu.be/82_WGqLzvSQ?si=iCnh3Z5BXiG6QD6s",
+            "🎬 失智怎麼「伴」：Ella 篇": "https://youtu.be/arWkQfBBGzw?si=x1lZ1jxSG5YV8OZt",
+            "🎬 長期照顧失智父，我哥累垮先走了": "https://youtu.be/F0niMbuREMM?si=2jxJpdIE-xuSB7o4",
+            "🎬 別讓長照悲歌成為我們的未來": "https://youtu.be/PBe-FbksrE0?si=6KX3tX-h-imD_tMN",
+            "🌐 各種長期照顧費用及補助表": "https://www.nursing.com.tw/%E9%95%B7%E7%85%A7%E6%9C%8D%E5%8B%99%E9%A0%85%E7%9B%AE%E8%B2%BB%E7%94%A8/",
+            "🎬 外籍看護與長照3.0資源搭配": "https://www.youtube.com/watch?v=NWUw9zl5W_Y&t=44s",
+            "🎬 住宿型長期照顧機構簡介及費用": "https://www.youtube.com/watch?v=J2R8OL8_C88",
+            "🌐 ALTC 長照網（查詢機構）": "https://www.airltc.com/",
+            "🌐 衛福部長期照顧專區": "https://1966.gov.tw/LTC/np-6450-207.html",
+            "🎬 失能險、長照險差異及理賠說明": "https://www.youtube.com/watch?v=zXg-RXR8mw4",
+            "🎬 長輩失智篩檢評量表": "https://youtu.be/dlmThO8gUHw?si=Rr3e-0CWBOdLdSla"
+        };
+
+        const DATA_STORE = [
+            { title: "失智症：不是老年的專利", intro: "失智症不許多是記憶力衰退，它是腦部功能的退化。", links: ["🎬 帕金森、阿茲海默症有何不同？", "🎬 失智不是老人專利，青壯族不能輕忽"] },
+            { title: "名人談長照：感性分享", intro: "看看名人們如何陪伴家人走過這段艱辛的長照之路。", links: ["🎬 失智怎麼「伴」：郎祖筠 篇", "🎬 失智怎麼「伴」：Ella 篇"] },
+            { title: "照顧者心聲：一人病全家倒", intro: "「如果我也倒下了，誰來照顧他？」", links: ["🎬 長期照顧失智父，我哥累垮先走了", "🎬 別讓長照悲歌成為我們的未來"] },
+            { title: "長照開銷與補助全攻略", intro: "了解政府資源，才能把錢花在刀口上。", links: ["🌐 各種長期照顧費用及補助表", "🎬 外籍看護與長照3.0資源搭配", "🎬 住宿型長期照顧機構簡介及費用", "🌐 ALTC 長照網（查詢機構）", "🌐 衛福部長期照顧專區"] },
+            { title: "長期照顧險選擇與啟動條件", intro: "了解長照險與失能險的啟動門檻與理賠條件，確保保障能適時啟動。", links: ["🎬 失能險、長照險差異及理賠說明", "🎬 長輩失智篩檢評量表"] },
+            { title: "未雨綢繆：保險方案選擇", intro: "根據您的家庭狀況，為您規劃最適切的長照與醫療防護網。", links: [] }
+        ];
+
+        function renderUI() {
+            if (_CN) {
+                document.getElementById('main-title').innerText = `長照守護：${_CN} 專屬簡報`;
+                document.getElementById('client-name').value = _CN;
+            }
+            
+            const container = document.getElementById('dynamic-content');
+            let html = '';
+            DATA_STORE.forEach((topic, idx) => {
+                let lHtml = topic.links.map(l => `<a href="${MAPPING[l]}" target="_blank" class="item-link" onclick="event.stopPropagation()">${l}</a>`).join('');
+                
+                if (idx === 5) {
+                    _D.forEach((d, i) => {
+                        if(d) {
+                            try {
+                                const bytes = CryptoJS.AES.decrypt(d, SALT);
+                                const dec = bytes.toString(CryptoJS.enc.Utf8);
+                                if(dec) {
+                                    lHtml += `<hr style="border:0; border-top:1px dashed #ddd; margin:15px 0;">`;
+                                    lHtml += `<a href="${dec}" target="_blank" class="item-link" style="background:#E67E22" onclick="event.stopPropagation()">📄 ${_N[i]}</a>`;
+                                    if(document.getElementById(`name-${i+1}`)) document.getElementById(`name-${i+1}`).value = _N[i];
+                                    if(document.getElementById(`url-${i+1}`)) document.getElementById(`url-${i+1}`).value = dec;
+                                }
+                            } catch(e){}
+                        }
+                    });
+                }
+                html += `<div class="topic-card"><div class="topic-header" onclick="toggleTopic(this)"><h2>${topic.title}</h2><div>▼</div></div><div class="topic-content"><div class="content-inner"><div class="intro-text">${topic.intro}</div>${lHtml}</div></div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleTopic(header) {
+            const card = header.parentElement;
+            const content = card.querySelector('.topic-content');
+            const isActive = card.classList.contains('active');
+
+            // 【核心修改】：先收合其他所有分類
+            document.querySelectorAll('.topic-card').forEach(otherCard => {
+                if (otherCard !== card) {
+                    otherCard.classList.remove('active');
+                    otherCard.querySelector('.topic-content').style.maxHeight = null;
+                }
+            });
+
+            // 切換當前點選的分類
+            if (isActive) {
+                card.classList.remove('active');
+                content.style.maxHeight = null;
+            } else {
+                card.classList.add('active');
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        }
+
+        function generateClientFile() {
+            const name = document.getElementById('client-name').value || "客戶";
+            const u = [];
+            const n = [];
+            for (let i = 1; i <= 8; i++) {
+                const urlInput = document.getElementById(`url-${i}`);
+                const nameInput = document.getElementById(`name-${i}`);
+                if (urlInput && nameInput) {
+                    const urlVal = urlInput.value.trim();
+                    const nameVal = nameInput.value.trim();
+                    u.push(urlVal ? CryptoJS.AES.encrypt(urlVal, SALT).toString() : "");
+                    n.push(nameVal);
+                }
+            }
+            
+            document.getElementById('admin-panel').style.display = 'none';
+            let h = document.documentElement.outerHTML;
+            
+            h = h.replace(/const _CN = ".*?";/, `const _CN = "${name}";`);
+            h = h.replace(/const _MODE = ".*?";/, `const _MODE = "MASTER";`);
+            
+            const dString = u.map(val => `"${val}"`).join(", ");
+            const nString = n.map(val => `"${val}"`).join(", ");
+            h = h.replace(/const _D = \[.*?\];/, `const _D = [${dString}];`);
+            h = h.replace(/const _N = \[.*?\];/, `const _N = [${nString}];`);
+            
+            h = h.replace(/id="admin-panel" style="display: none;" style="display: none;"/g, 'id="admin-panel" style="display: none;" style="display: none;"');
+            h = h.replace(/id="admin-panel" style="display: none;"/g, 'id="admin-panel" style="display: none;" style="display: none;"');
+
+            const b = new Blob(["<!DOCTYPE html>\n" + h], { type: "text/html" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(b); a.download = `長照簡報-${name}.html`; a.click();
+            
+            document.getElementById('admin-panel').style.display = 'block';
+            alert("✅ 客戶檔案已產製。\n預設狀態：後台隱藏、分類收合、單選切換。");
+        }
+
+        window.onload = function() {
+            renderUI();
+        };
+    </script>
+
+</body></html>
