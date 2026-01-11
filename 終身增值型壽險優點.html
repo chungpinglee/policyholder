@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
+<html lang="zh-Hant"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>終身增值型壽險優點</title>
@@ -14,6 +13,7 @@
             --hover-red: #ff0000; 
             --hover-blue: #0000FF; 
             --btn-green: #1b4332; 
+            --coffee-brown: #5d4037; 
             
             /* 分類專用主題色 */
             --color-1: #3498db; /* 進-藍 */
@@ -31,6 +31,7 @@
             padding: 0; 
             color: var(--text-main);
             line-height: 1.6;
+            /* 防止行動裝置滑動返回上一頁，避免反白文字時誤觸 */
             overscroll-behavior-x: none; 
         }
         
@@ -173,14 +174,14 @@
         #card-5 .badge-icon { background-color: var(--color-5); }
         #card-6 .badge-icon { background-color: var(--color-6); }
 
-        /* 分類標題文字放大 25% (電腦版 17px -> 21px) */
+        /* 分類標題文字 */
         .topic-header h2 { 
             margin: 0; font-size: 21px; font-weight: 800; letter-spacing: 1px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             transition: color 0.3s ease; 
         }
 
-        /* 第二層：副標題 */
+        /* 第二層：副標題樣式調整 */
         .level-2-subtitle {
             background-color: #f8f9fa;
             padding: 15px;
@@ -195,18 +196,20 @@
             transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
         }
         
-        /* 展開後文字放大 20% */
+        /* 修改：展開後狀態文字白色，填滿咖啡色 */
         .card-step-2 .level-2-subtitle { 
             display: block; 
-            background: #e9ecef; 
+            background: var(--coffee-brown); 
+            color: #ffffff; 
             font-size: 17px; 
             padding: 18px 15px;
         }
         
+        /* 修改：滑鼠滑過第2層文字依然保持白色並放大 20% */
         .card-step-2 .level-2-subtitle:hover {
             transform: scale(1.2);
             z-index: 5;
-            color: var(--hover-blue);
+            color: #ffffff; /* 維持白色 */
         }
 
         @keyframes slideDown {
@@ -230,6 +233,7 @@
         .card-step-2 .intro-box b { font-size: 18px; margin-bottom: 8px; transition: transform 0.3s ease, color 0.3s ease; display: block; transform-origin: left; }
         .card-step-2 .intro-box p { font-size: 17px; line-height: 1.5; transition: transform 0.3s ease, color 0.3s ease; transform-origin: left; }
 
+        /* 內容文字滑過放大 20% 並變藍色 */
         .card-step-2 .intro-box b:hover,
         .card-step-2 .intro-box p:hover {
             transform: scale(1.2);
@@ -252,6 +256,7 @@
             margin-top: 10px;
             border: 1px solid #dee2e6;
             transition: transform 0.3s ease, color 0.3s ease, background 0.3s ease;
+            text-decoration: none;
         }
         .card-step-2 .info-trigger { font-size: 15px; } 
         .info-trigger:hover { 
@@ -300,6 +305,7 @@
         }
         .card-step-2 .item-link { font-size: 17px; padding: 16px; }
         
+        /* 連結按鈕滑過放大 20% 並變藍色文字 */
         .item-link:hover { 
             transform: scale(1.2); 
             filter: brightness(1.1); 
@@ -329,7 +335,6 @@
         @media (max-width: 480px) {
             .grid-container { gap: 10px; }
             .topic-header { min-height: 110px; padding: 15px 10px; }
-            /* 修改：手機版分類標題文字由 19px 調整為 21px */
             .topic-header h2 { font-size: 21px; }
             .badge-icon { width: 50px; height: 50px; font-size: 26px; }
             .card-step-2 .level-2-subtitle:active,
@@ -355,13 +360,82 @@
         </div>
 
         <!-- 後台面板 -->
-        <div id="admin-panel">
+        <div id="admin-panel" style="display: none;">
             <div style="text-align:center; font-weight:bold; font-size:18px; color:var(--accent-gold); margin-bottom:15px;">🛠 內容與連結設定</div>
             <div style="margin-bottom:15px;">
                 <label style="font-size:14px; font-weight:bold;">客戶姓名：</label>
                 <input type="text" id="in-name" placeholder="例如：王大同" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd; box-sizing:border-box;">
             </div>
-            <div id="admin-fields"></div>
+            <div id="admin-fields"><div class="admin-section"><div class="admin-section-title">【進可攻:預約身價】</div><div class="admin-input-row">
+                    <input type="text" id="n-1-1" placeholder="名稱 1" value="">
+                    <input type="text" id="u-1-1" placeholder="連結網址 1" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-1-2" placeholder="名稱 2" value="">
+                    <input type="text" id="u-1-2" placeholder="連結網址 2" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-1-3" placeholder="名稱 3" value="">
+                    <input type="text" id="u-1-3" placeholder="連結網址 3" value="">
+                </div></div><div class="admin-section"><div class="admin-section-title">【退可守:快速借還】</div><div class="admin-input-row">
+                    <input type="text" id="n-2-1" placeholder="名稱 1" value="">
+                    <input type="text" id="u-2-1" placeholder="連結網址 1" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-2-2" placeholder="名稱 2" value="">
+                    <input type="text" id="u-2-2" placeholder="連結網址 2" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-2-3" placeholder="名稱 3" value="">
+                    <input type="text" id="u-2-3" placeholder="連結網址 3" value="">
+                </div></div><div class="admin-section"><div class="admin-section-title">【可送禮:分期給付】</div><div class="admin-input-row">
+                    <input type="text" id="n-3-1" placeholder="名稱 1" value="">
+                    <input type="text" id="u-3-1" placeholder="連結網址 1" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-3-2" placeholder="名稱 2" value="">
+                    <input type="text" id="u-3-2" placeholder="連結網址 2" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-3-3" placeholder="名稱 3" value="">
+                    <input type="text" id="u-3-3" placeholder="連結網址 3" value="">
+                </div></div><div class="admin-section"><div class="admin-section-title">【可自用:失能給付】</div><div class="admin-input-row">
+                    <input type="text" id="n-4-1" placeholder="名稱 1" value="">
+                    <input type="text" id="u-4-1" placeholder="連結網址 1" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-4-2" placeholder="名稱 2" value="">
+                    <input type="text" id="u-4-2" placeholder="連結網址 2" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-4-3" placeholder="名稱 3" value="">
+                    <input type="text" id="u-4-3" placeholder="連結網址 3" value="">
+                </div></div><div class="admin-section"><div class="admin-section-title">【我的財產我決定】</div><div class="admin-input-row">
+                    <input type="text" id="n-5-1" placeholder="名稱 1" value="">
+                    <input type="text" id="u-5-1" placeholder="連結網址 1" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-5-2" placeholder="名稱 2" value="">
+                    <input type="text" id="u-5-2" placeholder="連結網址 2" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-5-3" placeholder="名稱 3" value="">
+                    <input type="text" id="u-5-3" placeholder="連結網址 3" value="">
+                </div></div><div class="admin-section"><div class="admin-section-title">【行動方案 (最多8個)】</div><div class="admin-input-row">
+                    <input type="text" id="n-6-1" placeholder="名稱 1" value="保險商品導覽">
+                    <input type="text" id="u-6-1" placeholder="連結網址 1" value="https://chungpinglee.github.io/abc0480/%E4%BF%9D%E9%9A%AA%E5%B0%8E%E8%A6%BD%E7%B3%BB%E7%B5%B1_%E5%AE%8C%E6%95%B4%E7%89%88.html">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-6-2" placeholder="名稱 2" value="">
+                    <input type="text" id="u-6-2" placeholder="連結網址 2" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-6-3" placeholder="名稱 3" value="">
+                    <input type="text" id="u-6-3" placeholder="連結網址 3" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-6-4" placeholder="名稱 4" value="">
+                    <input type="text" id="u-6-4" placeholder="連結網址 4" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-6-5" placeholder="名稱 5" value="">
+                    <input type="text" id="u-6-5" placeholder="連結網址 5" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-6-6" placeholder="名稱 6" value="">
+                    <input type="text" id="u-6-6" placeholder="連結網址 6" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-6-7" placeholder="名稱 7" value="">
+                    <input type="text" id="u-6-7" placeholder="連結網址 7" value="">
+                </div><div class="admin-input-row">
+                    <input type="text" id="n-6-8" placeholder="名稱 8" value="">
+                    <input type="text" id="u-6-8" placeholder="連結網址 8" value="">
+                </div></div></div>
             <button class="save-btn" onclick="saveData()">👁 更新當前預覽</button>
             <button class="download-btn" onclick="exportNewFile()">💾 產製並下載新檔案</button>
             <button onclick="document.getElementById('admin-panel').style.display='none'" style="width:100%; background:#eee; border:none; padding:10px; margin-top:10px; border-radius:8px; cursor:pointer;">關閉後台</button>
@@ -415,7 +489,10 @@
                 <div class="topic-content">
                     <div class="content-inner">
                         <div class="intro-box">
-                            <b>● 保險金照顧 30 年</b>
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                                <b>● 保險金照顧 30 年</b>
+                                <a href="https://drive.google.com/file/d/1nDC1wJ65N0K2sUlXhJkEY5lqIwMSrDDN/view?usp=drive_link" target="_blank" class="info-trigger" style="margin-top:0; margin-bottom:8px;">📄 保險金信託範例</a>
+                            </div>
                             <p>保險金給付最長可分30年給付，保險金可照顧家人30年。</p>
                         </div>
                         <div class="link-container" id="links-3"></div>
@@ -466,14 +543,14 @@
                     <div class="badge-icon ani-spin">📋</div>
                     <h2>行動方案</h2>
                 </div>
-                <div class="level-2-subtitle" onclick="toggleCard(6)">為您量身打造的保障網</div>
+                <div class="level-2-subtitle" onclick="toggleCard(6)">為了成為30年後所想像的自己，請即刻行動</div>
                 <div class="topic-content">
                     <div class="content-inner">
                         <div class="intro-box">
-                            <b>● 專業規劃</b>
-                            <p>根據資產配置需求，規劃最適切的財富傳承與保障防護網。</p>
+                            <b>● 人無遠慮，必有近憂</b>
+                            <p>為了未來更好的自己與心愛的家人，請讓我們加入您的團隊，一起努力吧！</p>
                         </div>
-                        <div class="link-container" id="links-6"></div>
+                        <div class="link-container" id="links-6"><a href="https://chungpinglee.github.io/abc0480/%E4%BF%9D%E9%9A%AA%E5%B0%8E%E8%A6%BD%E7%B3%BB%E7%B5%B1_%E5%AE%8C%E6%95%B4%E7%89%88.html" target="_blank" class="item-link" onclick="handleLinkClick(this)">保險商品導覽</a></div>
                     </div>
                 </div>
             </div>
@@ -614,7 +691,7 @@
             allCollapse();
             document.getElementById('admin-panel').style.display = 'none';
             const name = document.getElementById('in-name').value.trim();
-            const fileName = name ? `${name}-壽險優點.html` : `壽險優點-動畫方塊版.html`;
+            const fileName = name ? `${name}-終身增值型壽險優點.html` : `終身增值型壽險優點.html`;
             const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const a = document.createElement('a');
@@ -630,5 +707,5 @@
             if (selection.length > 0) {}
         });
     </script>
-</body>
-</html>
+
+</body></html>
