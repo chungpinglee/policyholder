@@ -1,0 +1,545 @@
+<html lang="zh-TW"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>index</title> <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 750px;
+            position: relative;
+            margin-top: 20px; /* Added margin to avoid overlap with dashboard if body padding is small */
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+        }
+        .admin-panel-container {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        #toggleAdminButton {
+            padding: 8px 10px;
+            font-size: 18px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            align-self: flex-start;
+            flex-shrink: 0;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            line-height: 1.2;
+        }
+        #toggleAdminButton:hover {
+            background-color: #5a6268;
+        }
+        .admin-section {
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            text-align: left;
+            flex-grow: 1;
+        }
+        .admin-section.hidden {
+            display: none;
+        }
+        .action-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .action-row .menu-button {
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .inputs-container {
+            display: flex;
+            flex-grow: 1;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .inputs-container input[type="text"],
+        .inputs-container input[type="url"],
+        .inputs-container input[type="number"] {
+            padding: 8px;
+            margin-bottom: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        #newButtonText { flex: 1 1 150px; min-width: 120px; }
+        #newButtonUrl { flex: 1 1 200px; min-width: 150px; }
+        #newButtonPosition { flex: 0 1 120px; min-width: 100px; }
+        #removeButtonNumber { flex: 1 1 150px; min-width: 120px;}
+        #newFileNameInput { flex: 1 1 250px; min-width: 200px; }
+        .menu-button {
+            padding: 8px 15px;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 5px;
+        }
+        .menu-button.add { background-color: #28a745; }
+        .menu-button.remove { background-color: #dc3545; } /* Changed remove button color for clarity */
+        .menu-button.save-as { background-color: #17a2b8; }
+        .menu-button:hover { /* Specific hover for .menu-button if needed separate from .button-link */
+            color: white !important;
+            background-color: #0056b3 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-link:hover { /* Modified hover for .button-link as requested */
+            color: white !important; /* Text color white on hover */
+            background-color: red !important; /* Background color red on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+         .button-link:active { transform: translateY(0); }
+        .button-link-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 15px;
+        }
+        .button-link {
+            padding: 12px 20px;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            text-align: center;
+            flex-grow: 1;
+            flex-shrink: 1;
+            min-width: 200px;
+            max-width: 100%;
+        }
+        hr {
+             border: 0;
+             height: 1px;
+             background: #ced4da;
+             margin: 20px 0;
+        }
+
+        /* CSS for Car Dashboard */
+        #carDashboard {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            z-index: 1001; /* Ensure it's on top */
+            background-color: red;
+            padding: 8px;
+            border-radius: 6px;
+            box-shadow: 0 0 7px rgba(0,0,0,0.4);
+        }
+        .gauge-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 5px; }
+        .gauge-container:last-child { margin-bottom: 0; }
+        .gauge { width: 60px; height: 30px; background: linear-gradient(to bottom, #282828, #101010); border-top-left-radius: 30px; border-top-right-radius: 30px; position: relative; border: 2px solid white; border-bottom: none; box-shadow: inset 0 0 4px white; overflow: hidden; }
+        .needle { width: 2px; height: 27px; background-color: white; border-radius: 1px; box-shadow: 0 0 3px #888; position: absolute; bottom: 0px; left: 50%; transform-origin: 50% 100%; }
+        .gauge-label { font-family: 'Arial', sans-serif; font-size: 9px; color: #FFF; margin-top: 3px; text-shadow: 1px 1px 1px #000; }
+        /* End CSS for Car Dashboard */
+    </style>
+</head>
+<body>
+    <div id="carDashboard">
+        <div class="gauge-container">
+            <div class="gauge" id="speedometerGauge"><div class="needle" id="speedometerNeedle" style="transform: translateX(-50%) rotate(-29.6501deg);"></div></div>
+            <div class="gauge-label">速度</div>
+        </div>
+        <div class="gauge-container">
+            <div class="gauge" id="tachometerGauge"><div class="needle" id="tachometerNeedle" style="transform: translateX(-50%) rotate(43deg);"></div></div>
+            <div class="gauge-label">轉速</div>
+        </div>
+        <div class="gauge-container">
+            <div class="gauge" id="fuelGaugeGauge"><div class="needle" id="fuelGaugeNeedle" style="transform: translateX(-50%) rotate(60deg);"></div></div>
+            <div class="gauge-label">油量</div>
+        </div>
+    </div>
+    <div class="container">
+        <h1 id="pageMainTitle">首頁</h1>
+
+        <div class="admin-panel-container">
+            <button id="toggleAdminButton" title="隱藏設定區塊">✕</button>
+            <div class="admin-section" id="adminSectionContent">
+                <div class="action-row">
+                    <button class="menu-button add" onclick="handleAddNewButton()">新增按鈕</button>
+                    <div class="inputs-container">
+                        <input type="text" id="newButtonText" placeholder="按鈕文字">
+                        <input type="url" id="newButtonUrl" placeholder="按鈕網址 (例: page.html)">
+                        <input type="number" id="newButtonPosition" placeholder="插入位置編號 (可選)" min="1" max="4">
+                    </div>
+                </div>
+                <hr>
+                <div class="action-row">
+                    <button class="menu-button remove" onclick="handleRemoveButton()">減少按鈕</button>
+                    <div class="inputs-container">
+                        <input type="number" id="removeButtonNumber" placeholder="要移除的按鈕編號" min="1" max="3">
+                    </div>
+                </div>
+                <hr>
+                <div class="action-row">
+                    <button class="menu-button save-as" id="handleSaveAsButton">修改標題並另存</button>
+                    <div class="inputs-container">
+                        <input type="text" id="newFileNameInput" placeholder="新檔案標題 (預設為目前標題)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-link-container" id="buttonLinkContainer"><a href="../../客戶管理.html" class="button-link">1. 回上頁</a><a href="張曼玲全家-網頁版/電腦版/首頁.html" class="button-link">2. 電腦版</a><a href="全家-網頁版/雲端版/首頁.html" class="button-link">3. 雲端版</a></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttonContainer = document.getElementById('buttonLinkContainer');
+            const newButtonTextInput = document.getElementById('newButtonText');
+            const newButtonUrlInput = document.getElementById('newButtonUrl');
+            const newButtonPositionInput = document.getElementById('newButtonPosition');
+            const removeButtonNumberInput = document.getElementById('removeButtonNumber');
+            const newFileNameInput = document.getElementById('newFileNameInput');
+            const saveAsButton = document.getElementById('handleSaveAsButton'); // Renamed for clarity
+            const pageMainTitleH1 = document.getElementById('pageMainTitle');
+            const toggleAdminButton = document.getElementById('toggleAdminButton');
+            const adminSectionContent = document.getElementById('adminSectionContent');
+            
+            // --- Car Dashboard JavaScript ---
+            const carDashboard = document.getElementById('carDashboard');
+            const speedometerNeedle = document.getElementById('speedometerNeedle');
+            const tachometerNeedle = document.getElementById('tachometerNeedle');
+            const fuelGaugeNeedle = document.getElementById('fuelGaugeNeedle');
+
+            if (carDashboard) { // Check if the dashboard element exists
+                const speedMinAngle = -70, speedMaxAngle = 10, rpmMinAngle = -100, rpmMaxAngle = 100;
+                let currentRpmAngle = rpmMinAngle, rpmDirection = 1, currentSpeedAngle = speedMinAngle;
+                const easingFactor = 0.12;
+                
+                // Initialize currentSpeedAngle and currentRpmAngle from HTML style if present
+                if (speedometerNeedle && speedometerNeedle.style.transform) {
+                    const match = speedometerNeedle.style.transform.match(/rotate\(([^de]+)deg\)/);
+                    if (match && match[1]) currentSpeedAngle = parseFloat(match[1]);
+                }
+                 if (tachometerNeedle && tachometerNeedle.style.transform) {
+                    const match = tachometerNeedle.style.transform.match(/rotate\(([^de]+)deg\)/);
+                    if (match && match[1]) currentRpmAngle = parseFloat(match[1]);
+                }
+
+
+                function updateGauges() {
+                    if (rpmDirection === 1) { currentRpmAngle += 6.5; if (currentRpmAngle >= rpmMaxAngle) { currentRpmAngle = rpmMaxAngle; rpmDirection = -1; } }
+                    else { currentRpmAngle -= 6.5; if (currentRpmAngle <= rpmMinAngle) { currentRpmAngle = rpmMinAngle; rpmDirection = 1; } }
+                    if(tachometerNeedle) tachometerNeedle.style.transform = `translateX(-50%) rotate(${currentRpmAngle}deg)`;
+                    
+                    const rpmRange = rpmMaxAngle - rpmMinAngle; const speedRange = speedMaxAngle - speedMinAngle;
+                    let targetSpeedAngle; 
+                    if (rpmRange === 0) { 
+                        targetSpeedAngle = speedMinAngle; 
+                    } else { 
+                        const currentRpmPercentage = (currentRpmAngle - rpmMinAngle) / rpmRange; 
+                        targetSpeedAngle = speedMinAngle + (currentRpmPercentage * speedRange); 
+                    }
+                    targetSpeedAngle = Math.max(speedMinAngle, Math.min(speedMaxAngle, targetSpeedAngle));
+                    currentSpeedAngle += (targetSpeedAngle - currentSpeedAngle) * easingFactor;
+                    if(speedometerNeedle) speedometerNeedle.style.transform = `translateX(-50%) rotate(${currentSpeedAngle}deg)`;
+                }
+                
+                const fuelFullAngle = 60; // Default angle from HTML
+                // Ensure fuel gauge needle has its initial transform if not already set (it is set in the HTML)
+                if(fuelGaugeNeedle && (!fuelGaugeNeedle.style.transform || fuelGaugeNeedle.style.transform.indexOf('rotate') === -1)) {
+                     fuelGaugeNeedle.style.transform = `translateX(-50%) rotate(${fuelFullAngle}deg)`;
+                }
+
+                // Ensure speed and tachometer needles have initial transforms if not already set (they are set in the HTML)
+                if(speedometerNeedle && (!speedometerNeedle.style.transform || speedometerNeedle.style.transform.indexOf('rotate') === -1)) {
+                     speedometerNeedle.style.transform = `translateX(-50%) rotate(${currentSpeedAngle}deg)`; // Use parsed or default currentSpeedAngle
+                }
+                if(tachometerNeedle && (!tachometerNeedle.style.transform || tachometerNeedle.style.transform.indexOf('rotate') === -1)) {
+                     tachometerNeedle.style.transform = `translateX(-50%) rotate(${currentRpmAngle}deg)`; // Use parsed or default currentRpmAngle
+                }
+                
+                setInterval(updateGauges, 35); // Animation interval
+            }
+            // --- End Car Dashboard JavaScript ---
+
+            let currentLocalStorageKey = 'customMenuButtons_index_1768877803804_v3'; 
+            let currentAdminPanelVisibleKey = 'adminPanelVisible_index_1768877803804_v3'; 
+
+            const initialButtons = [
+  {
+    "text": "回上頁",
+    "href": "../../客戶管理.html"
+  },
+  {
+    "text": "電腦版",
+    "href": "張曼玲全家-網頁版/電腦版/首頁.html"
+  },
+  {
+    "text": "雲端版",
+    "href": "全家-網頁版/雲端版/首頁.html"
+  }
+];
+
+            function escapeHtml(unsafe) {
+                if (typeof unsafe !== 'string') return '';
+                return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            function saveButtonsToLocalStorage(buttonsToSave) {
+                console.log(`Saving buttons with key: ${currentLocalStorageKey}`);
+                localStorage.setItem(currentLocalStorageKey, JSON.stringify(buttonsToSave));
+            }
+
+            function loadButtonsFromLocalStorage() {
+                console.log(`Loading buttons with key: ${currentLocalStorageKey}`);
+                const savedButtons = localStorage.getItem(currentLocalStorageKey);
+                if (savedButtons) {
+                    try {
+                        const parsedButtons = JSON.parse(savedButtons);
+                        return Array.isArray(parsedButtons) ? parsedButtons : JSON.parse(JSON.stringify(initialButtons));
+                    } catch (e) {
+                        console.error("Error parsing stored button data, using initial:", e);
+                        return JSON.parse(JSON.stringify(initialButtons));
+                    }
+                }
+                return JSON.parse(JSON.stringify(initialButtons));
+            }
+
+            function renderButtons() {
+                const buttons = loadButtonsFromLocalStorage();
+                buttonContainer.innerHTML = ''; // Clear existing buttons
+                buttons.forEach((buttonData, index) => {
+                    const newButton = document.createElement('a');
+                    newButton.href = buttonData.href; // Use the href from loaded/initial data
+                    newButton.className = 'button-link';
+                    newButton.textContent = `${index + 1}. ${escapeHtml(buttonData.text)}`;
+                    buttonContainer.appendChild(newButton);
+                });
+                newButtonPositionInput.max = buttons.length + 1;
+                removeButtonNumberInput.max = buttons.length > 0 ? buttons.length : 1;
+                removeButtonNumberInput.placeholder = buttons.length > 0 ? "要移除的按鈕編號" : "沒有按鈕可移除";
+                if (buttons.length === 0) removeButtonNumberInput.value = '';
+            }
+
+            window.handleAddNewButton = function() { // Make it global for onclick
+                const text = newButtonTextInput.value.trim();
+                const url = newButtonUrlInput.value.trim();
+                const posStr = newButtonPositionInput.value.trim();
+                if (!text || !url) {
+                    alert("按鈕文字和網址不能為空。");
+                    return;
+                }
+
+                const currentButtons = loadButtonsFromLocalStorage();
+                const newButtonData = { text, href: url };
+                let position = posStr ? parseInt(posStr) : currentButtons.length + 1;
+                position = Math.max(1, Math.min(position, currentButtons.length + 1));
+
+                if (confirm(`確認新增按鈕?\n文字: ${text}\n網址: ${url}\n位置: ${position}`)) {
+                    currentButtons.splice(position - 1, 0, newButtonData);
+                    saveButtonsToLocalStorage(currentButtons);
+                    renderButtons();
+                    newButtonTextInput.value = ''; newButtonUrlInput.value = ''; newButtonPositionInput.value = '';
+                    alert("按鈕已新增至目前頁面設定。\n若要將此變更保存為新檔案或更新目前檔案（透過另存），請使用「修改標題並另存」。");
+                }
+            }
+
+            window.handleRemoveButton = function() { // Make it global for onclick
+                const currentButtons = loadButtonsFromLocalStorage();
+                if (currentButtons.length === 0) {
+                    alert("沒有按鈕可以移除。");
+                    return;
+                }
+                const numStr = removeButtonNumberInput.value;
+                if (!numStr) {
+                    alert("請輸入要移除的按鈕編號。");
+                    return;
+                }
+                const num = parseInt(numStr);
+                if (isNaN(num) || num < 1 || num > currentButtons.length) {
+                    alert(`無效的編號。請輸入 1 到 ${currentButtons.length}。`);
+                    return;
+                }
+                if (confirm(`確認移除按鈕 "${currentButtons[num - 1].text}"?`)) {
+                    currentButtons.splice(num - 1, 1);
+                    saveButtonsToLocalStorage(currentButtons);
+                    renderButtons();
+                    removeButtonNumberInput.value = '';
+                    alert("按鈕已從目前頁面設定中移除。\n若要將此變更保存為新檔案或更新目前檔案（透過另存），請使用「修改標題並另存」。");
+                }
+            }
+            
+            function savePageAs() {
+                const newTitleFromInput = newFileNameInput.value.trim();
+                const currentDocTitle = document.title; 
+                const finalNewTitle = newTitleFromInput || currentDocTitle;
+                
+                let newFileName = finalNewTitle.replace(/\s+/g, '_').replace(/[\\/:*?"<>|#%&{}]/g, '') + '.html';
+                if (newFileName.toLowerCase() === '.html' || (newFileName.startsWith('_') && newFileName.toLowerCase().endsWith('.html') && newFileName.length < 7)) {
+                    newFileName = `Untitled_Menu_${new Date().getTime()}.html`;
+                }
+
+                let htmlStringToSave = document.documentElement.outerHTML;
+
+                const titleTagRegex = /(<title\b[^>]*>)([\s\S]*?)(<\/title>)/i;
+                htmlStringToSave = htmlStringToSave.replace(titleTagRegex, `$1${escapeHtml(finalNewTitle)}$3`);
+
+                if (pageMainTitleH1 && pageMainTitleH1.id) {
+                    const h1Regex = new RegExp(`(<h1\\b[^>]*id="${pageMainTitleH1.id}"[^>]*>)([\\s\S]*?)(<\\/h1>)`, "i");
+                    htmlStringToSave = htmlStringToSave.replace(h1Regex, `$1${escapeHtml(finalNewTitle)}$3`);
+                }
+
+                const buttonsToEmbed = loadButtonsFromLocalStorage(); 
+                const buttonsStringForEmbedding = JSON.stringify(buttonsToEmbed, null, 2);
+                // Adjusted regex to be more robust
+                const initialButtonsRegex = /const\s+initialButtons\s*=\s*(\[[\s\S]*?\])\s*;/i;
+
+                if (htmlStringToSave.match(initialButtonsRegex)) {
+                    htmlStringToSave = htmlStringToSave.replace(initialButtonsRegex, `const initialButtons = ${buttonsStringForEmbedding};`);
+                } else {
+                    console.warn("Could not find 'const initialButtons = ...;' in HTML string to update for new file.");
+                }
+                
+                const isAdminHidden = adminSectionContent.classList.contains('hidden');
+                const toggleBtnText = isAdminHidden ? '☰' : '✕';
+                htmlStringToSave = htmlStringToSave.replace(
+                    /(<button\s+id="toggleAdminButton"[^>]*>)([\s\S]*?)(<\/button>)/i,
+                    `$1${toggleBtnText}$3`
+                );
+                const adminSectionClassRegex = /(<div\s+class="admin-section)([^"]*?)("\s+id="adminSectionContent"[^>]*>)/i;
+                if (isAdminHidden) {
+                    if (!htmlStringToSave.match(/class="admin-section hidden"/i)) {
+                         htmlStringToSave = htmlStringToSave.replace(adminSectionClassRegex, '$1 hidden$3');
+                    }
+                } else {
+                     htmlStringToSave = htmlStringToSave.replace(adminSectionClassRegex, (match, p1, p2, p3) => `${p1}${p2.replace(/\s*hidden\s*/g, '')}${p3}`);
+                }
+                
+                let regeneratedButtonContainerHTML = '';
+                buttonsToEmbed.forEach((buttonData, index) => {
+                    const buttonText = escapeHtml(`${index + 1}. ${buttonData.text}`);
+                    const buttonHref = buttonData.href; 
+                    regeneratedButtonContainerHTML += `<a href="${buttonHref}" class="button-link">${buttonText}</a>`;
+                });
+
+                const buttonContainerRegex = /(<div\s+class="button-link-container"\s+id="buttonLinkContainer">)([\s\S]*?)(<\/div>)/i;
+                if (htmlStringToSave.match(buttonContainerRegex)) {
+                    htmlStringToSave = htmlStringToSave.replace(buttonContainerRegex, `$1${regeneratedButtonContainerHTML}$3`);
+                } else {
+                     console.warn("Could not find buttonLinkContainer in HTML to update its static links for saving.");
+                }
+
+                const timestamp = new Date().getTime();
+                const sanitizedTitleForNewKey = finalNewTitle.replace(/\s+/g, '_').replace(/[^\w\u4e00-\u9fa5-]/g, '');
+                
+                const newEmbeddedLocalStorageKey = `customMenuButtons_${sanitizedTitleForNewKey || 'file'}_${timestamp}_v3`;
+                const newEmbeddedAdminPanelVisibleKey = `adminPanelVisible_${sanitizedTitleForNewKey || 'file'}_${timestamp}_v3`;
+
+                console.log(`Embedding new keys into saved file: ${newEmbeddedLocalStorageKey}, ${newEmbeddedAdminPanelVisibleKey}`);
+
+                const keyDefinitionRegex = (keyVarName) => 
+                    new RegExp(`(let\\s+${keyVarName}\\s*=\\s*['"])([^'"]+)(['"]\\s*;?)`, "i");
+
+                htmlStringToSave = htmlStringToSave.replace(
+                    keyDefinitionRegex('currentLocalStorageKey'), 
+                    `$1${newEmbeddedLocalStorageKey}$3`
+                );
+                htmlStringToSave = htmlStringToSave.replace(
+                    keyDefinitionRegex('currentAdminPanelVisibleKey'), 
+                    `$1${newEmbeddedAdminPanelVisibleKey}$3`
+                );
+
+                const blob = new Blob([htmlStringToSave], { type: 'text/html;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = newFileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+                alert(`檔案 "${newFileName}" 已另存。\n此新檔案將擁有獨立的按鈕設定。`);
+            }
+
+
+            function toggleAdminSectionVisibility() {
+                const isHidden = adminSectionContent.classList.toggle('hidden');
+                toggleAdminButton.textContent = isHidden ? '☰' : '✕';
+                toggleAdminButton.title = isHidden ? '顯示設定區塊' : '隱藏設定區塊';
+                localStorage.setItem(currentAdminPanelVisibleKey, !isHidden); 
+            }
+
+            function loadAdminPanelState() {
+                const isVisible = localStorage.getItem(currentAdminPanelVisibleKey); 
+                if (isVisible === 'false') { 
+                    adminSectionContent.classList.add('hidden');
+                    toggleAdminButton.textContent = '☰';
+                    toggleAdminButton.title = '顯示設定區塊';
+                } else { 
+                    adminSectionContent.classList.remove('hidden');
+                    toggleAdminButton.textContent = '✕';
+                    toggleAdminButton.title = '隱藏設定區塊';
+                }
+            }
+
+            // Initial setup
+            newFileNameInput.value = document.title; 
+            
+            if (pageMainTitleH1) {
+                pageMainTitleH1.textContent = document.title;
+            }
+            
+            console.log(`Page loaded. Using LocalStorage Key: ${currentLocalStorageKey}, Admin Panel Key: ${currentAdminPanelVisibleKey}`);
+
+            loadAdminPanelState();
+            renderButtons();    
+            
+            if (saveAsButton) {
+                saveAsButton.addEventListener('click', function() {
+                    const targetTitle = newFileNameInput.value.trim() || document.title;
+                    if (!confirm(`確認要將目前設定另存為檔案，標題為 "${targetTitle}" 嗎？\n新儲存的檔案將會是獨立的。`)) {
+                        return;
+                    }
+                    savePageAs();
+                });
+            }
+
+            if (toggleAdminButton) {
+                toggleAdminButton.addEventListener('click', toggleAdminSectionVisibility);
+            }
+        });
+    </script>
+
+</body></html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全家壽險保障統計表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', 'Inter', '微軟正黑體', 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        h1 {
+            color: #ffffff;
+            background-color: #6f4e37; 
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            font-size: 3.25em; 
+            font-weight: 700;
+        }
+        .top-nav {
+            background-color: #e0f2f1;
+            padding: 15px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #b2dfdb;
+            flex-wrap: wrap;
+        }
+        .back-btn {
+            background-color: #546e7a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .nav-link-btn {
+            padding: 10px 20px;
+            background-color: #fff;
+            color: #004d40;
+            border: 2px solid #004d40;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover, .nav-link-btn:hover, #show-summary-btn:hover, #show-details-btn:hover, #print-btn:hover {
+            background-color: #d32f2f !important; 
+            color: #ffffff !important;
+            border-color: #d32f2f !important;
+        }
+        .infographic-section {
+            background: #ffffff;
+            border: 1px solid #000;
+            border-radius: 8px;
+            margin: 20px;
+            overflow: hidden;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #004d40;
+            padding: 20px;
+            background-color: #e0f2f1;
+        }
+        .section-content {
+            overflow-x: auto;
+            max-height: 0;
+            transition: max-height 0.4s ease-out;
+        }
+        .section-content.expanded {
+            max-height: 2500px;
+        }
+        
+        /* 顯示隱藏表格內容的邏輯 */
+        .infographic-section:not(#grand-total-summary) .section-content table thead,
+        .infographic-section:not(#grand-total-summary) .section-content table tbody {
+            display: none;
+        }
+        .infographic-section:not(#grand-total-summary) .section-content.details-expanded table thead {
+            display: table-header-group;
+        }
+        .infographic-section:not(#grand-total-summary) .section-content.details-expanded table tbody {
+            display: table-row-group;
+        }
+
+        /* --- 手機版模式隱藏特定欄位 (要保人, 類型, 幣別) --- */
+        .mobile-mode .col-policy-holder,
+        .mobile-mode .col-type,
+        .mobile-mode .col-currency {
+            display: none !important;
+        }
+
+        .section-header.collapsible { cursor: pointer; justify-content: space-between; }
+        .toggle-icon { font-size: 2em; font-weight: 300; color: #004d40; padding: 0 10px; }
+        .policy-table { width: 100%; border-collapse: collapse; }
+        .policy-table th, .policy-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; white-space: nowrap; }
+        .policy-table th { background-color: #f9f9f9; font-weight: 600; color: #555; font-size: 0.9em; }
+        
+        /* 對齊設定 */
+        .policy-table th.col-type, .policy-table td.col-type,
+        .policy-table th.col-currency, .policy-table td.col-currency { text-align: center; }
+        .policy-table th.col-original, .policy-table td.col-original,
+        .policy-table th.col-twd, .policy-table td.col-twd { text-align: right; }
+
+        .currency-usd { color: #d32f2f; font-weight: 500; }
+        .table-footer td { font-size: 1.0em; font-weight: 700; color: #000; }
+        .table-footer .total-label { text-align: right; font-weight: 600; padding-right: 10px; }
+        .grand-total td { border-top: 2px solid #004d40; background-color: #f0fdfa; }
+        .chart-section { padding: 20px; background-color: #ffffff; }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 25px; }
+        .chart-wrapper { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #fdfdfd; }
+        .chart-container { position: relative; height: 400px; width: 100%; }
+
+        @media print {
+            .top-nav, .p-5 .text-right, #print-btn, #show-summary-btn, #show-details-btn { display: none !important; }
+            .container { max-width: 100% !important; border: none !important; }
+            .section-content { max-height: none !important; }
+            .infographic-section:not(#grand-total-summary) .section-content table thead,
+            .infographic-section:not(#grand-total-summary) .section-content table tbody { display: table-header-group !important; display: table-row-group !important; }
+        }
+    </style>
+</head>
+<body class="mobile-mode">
+
+    <div class="container">
+        <h1>全家壽險保障統計表</h1>
+
+        <div class="top-nav">
+            <a href="../index.html" class="back-btn">回上頁</a>
+            <a href="全家保單價值統計表.html" class="nav-link-btn">全家保單價值統計表</a>
+            <a href="全家還本金統計表.html" class="nav-link-btn">全家還本金統計表</a>
+            <a href="全家保費統計表.html" class="nav-link-btn">全家保費統計表</a>
+        </div>
+        
+        <div class="p-5 text-sm text-gray-600 bg-gray-50 flex justify-between items-center flex-wrap gap-4">
+            <div>
+                <strong>註：</strong> 僅統計「壽險保障」。點擊「手機版」以展開簡約視圖，點擊「電腦版」切換完整模式。
+            </div>
+            <div class="text-right">
+                <div class="flex gap-2 justify-end">
+                    <button id="show-summary-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md shadow text-sm font-medium transition-colors hover:bg-blue-700">手機版</button>
+                    <button id="show-details-btn" class="px-4 py-2 bg-green-600 text-white rounded-md shadow text-sm font-medium transition-colors hover:bg-green-700">電腦版</button>
+                    <button id="print-btn" class="px-4 py-2 rounded-md shadow text-sm font-medium bg-yellow-400 text-blue-900 hover:bg-yellow-500">列印</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 總計儀表板 -->
+        <div class="infographic-section" id="grand-total-summary" style="border-color: #004d40; border-width: 2px;">
+            <div class="section-header">
+                <div class="flex items-center gap-3">
+                    <span class="section-icon">📊</span>
+                    <span>全家壽險保障統計總計 (114年)</span>
+                </div>
+            </div>
+            <div class="section-content expanded" style="max-height: 1000px;">
+                <table class="policy-table">
+                    <thead>
+                        <tr>
+                            <th>保障類別</th>
+                            <th>台幣保障 (TWD)</th>
+                            <th>美元保障 (USD)</th>
+                            <th>總保障 (換算台幣)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-footer grand-total">
+                            <td class="total-label">全家壽險總計:</td>
+                            <td class="total-value" id="summary-life-twd">NT$ 0</td>
+                            <td class="total-value" id="summary-life-usd">USD 0</td>
+                            <td class="total-value grand-total-value" id="summary-life-grand" style="color:#004d40; font-size: 1.25em;">NT$ 0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 未來20年保障趨勢圖 -->
+        <div class="infographic-section">
+            <div class="section-header collapsible active">
+                <div class="flex items-center gap-3">
+                    <span class="section-icon">📈</span>
+                    <span>未來20年壽險保障趨勢 (萬元 TWD)</span>
+                </div>
+                <span class="toggle-icon">–</span>
+            </div>
+            <div class="section-content expanded">
+                <div class="chart-section">
+                    <div class="chart-wrapper mb-8">
+                        <h3>全家總壽險保障趨勢</h3>
+                        <div class="chart-container"><canvas id="chart-family-total"></canvas></div>
+                    </div>
+                    <div class="chart-grid">
+                        <div class="chart-wrapper"><h3>張曼玲</h3><div class="chart-container"><canvas id="chart-zhangmanling"></canvas></div></div>
+                        <div class="chart-wrapper"><h3>洪家顯</h3><div class="chart-container"><canvas id="chart-premium-hongjiaxian"></canvas></div></div>
+                        <div class="chart-wrapper"><h3>洪君慧</h3><div class="chart-container"><canvas id="chart-hongjunhui"></canvas></div></div>
+                        <div class="chart-wrapper"><h3>洪瑾柔</h3><div class="chart-container"><canvas id="chart-hongjinrou"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 個人明細表 -->
+        <!-- 張曼玲 -->
+        <div class="infographic-section section-person">
+            <div class="section-header collapsible">
+                <div class="flex items-center gap-3"><span class="section-icon">👩</span><span>被保險人: 張曼玲</span></div>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="section-content">
+                <table class="policy-table" id="table-zhangmanling">
+                    <thead>
+                        <tr>
+                            <th>保單號碼</th>
+                            <th class="col-policy-holder">要保人</th>
+                            <th>生效日</th>
+                            <th>險種名稱</th>
+                            <th class="col-type">類型</th>
+                            <th class="col-currency">幣別</th>
+                            <th class="col-original">保障-原幣</th>
+                            <th class="col-twd">保障-台幣</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-type="life"><td>N125314105</td><td class="col-policy-holder">張曼玲</td><td>84/04/28</td><td class="col-plan-name">20IPLN/南山康樂限期繳費終身壽險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="100000">100,000</td><td class="col-twd" data-value="100000">100,000</td></tr>
+                        <tr data-type="life"><td>N236052291</td><td class="col-policy-holder">張曼玲</td><td>88/07/15</td><td class="col-plan-name">20ALES/南山年年春還本終身保險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="200000">200,000</td><td class="col-twd" data-value="200000">200,000</td></tr>
+                        <tr data-type="life"><td>N236052301</td><td class="col-policy-holder">張曼玲</td><td>88/07/15</td><td class="col-plan-name">20DPLB/南山康祥終身壽險-B型</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="500000">500,000</td><td class="col-twd" data-value="500000">500,000</td></tr>
+                        <tr data-type="life"><td>N236119901</td><td class="col-policy-holder">張曼玲</td><td>93/02/27</td><td class="col-plan-name">10B1A/南山人壽B1還本終身保險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="600000">600,000</td><td class="col-twd" data-value="600000">600,000</td></tr>
+                        <tr data-type="life"><td>N236119914</td><td class="col-policy-holder">張曼玲</td><td>93/02/27</td><td class="col-plan-name">10B2A/南山人壽B2還本終身保險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="600000">600,000</td><td class="col-twd" data-value="600000">600,000</td></tr>
+                        <tr data-type="life"><td>U009923531</td><td class="col-policy-holder">張曼玲</td><td>109/02/25</td><td class="col-plan-name">6UISPL2/多美福美元利變壽險</td><td class="col-type">壽險</td><td class="col-currency">美元</td><td class="col-original" data-value="304833">304,833</td><td class="col-twd" data-value="9310481">9,310,481</td></tr>
+                        <tr data-type="life"><td>A021599079</td><td class="col-policy-holder">張曼玲</td><td>111/01/26</td><td class="col-plan-name">AHUPL5/美滿多福5美元利變壽險</td><td class="col-type">壽險</td><td class="col-currency">美元</td><td class="col-original" data-value="355248">355,248</td><td class="col-twd" data-value="10850230">10,850,230</td></tr>
+                    </tbody>
+                    <tfoot><tr class="table-footer grand-total"><td colspan="6" class="total-label">個人壽險總保障:</td><td colspan="2" class="total-value" id="total-grand-zhangmanling">NT$ 0</td></tr></tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- 洪家顯 -->
+        <div class="infographic-section section-person">
+            <div class="section-header collapsible">
+                <div class="flex items-center gap-3"><span class="section-icon">👨</span><span>被保險人: 洪家顯</span></div>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="section-content">
+                <table class="policy-table" id="table-hongjiaxian">
+                    <thead>
+                        <tr>
+                            <th>保單號碼</th>
+                            <th class="col-policy-holder">要保人</th>
+                            <th>生效日</th>
+                            <th>險種名稱</th>
+                            <th class="col-type">類型</th>
+                            <th class="col-currency">幣別</th>
+                            <th class="col-original">保障-原幣</th>
+                            <th class="col-twd">保障-台幣</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-type="life"><td>N486041159</td><td class="col-policy-holder">張曼玲</td><td>88/12/02</td><td class="col-plan-name">20PL/南山康福二十年期繳費終身壽險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="300000">300,000</td><td class="col-twd" data-value="300000">300,000</td></tr>
+                        <tr data-type="life"><td>N236120398</td><td class="col-policy-holder">張曼玲</td><td>93/03/30</td><td class="col-plan-name">DDLC/南山人壽新康祥終身壽險-C型</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="500000">500,000</td><td class="col-twd" data-value="500000">500,000</td></tr>
+                        <tr data-type="life"><td>N733009459</td><td class="col-policy-holder">張曼玲</td><td>99/05/13</td><td class="col-plan-name">20ROPA/南山人壽增得意保險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="1500000">1,500,000</td><td class="col-twd" data-value="1500000">1,500,000</td></tr>
+                    </tbody>
+                    <tfoot><tr class="table-footer grand-total"><td colspan="6" class="total-label">個人壽險總保障:</td><td colspan="2" class="total-value" id="total-grand-hongjiaxian">NT$ 0</td></tr></tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- 洪君慧 -->
+        <div class="infographic-section section-person">
+            <div class="section-header collapsible">
+                <div class="flex items-center gap-3"><span class="section-icon">👧</span><span>被保險人: 洪君慧</span></div>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="section-content">
+                <table class="policy-table" id="table-hongjunhui">
+                    <thead>
+                        <tr>
+                            <th>保單號碼</th>
+                            <th class="col-policy-holder">要保人</th>
+                            <th>生效日</th>
+                            <th>險種名稱</th>
+                            <th class="col-type">類型</th>
+                            <th class="col-currency">幣別</th>
+                            <th class="col-original">保障-原幣</th>
+                            <th class="col-twd">保障-台幣</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-type="life"><td>N140380127</td><td class="col-policy-holder">張曼玲</td><td>86/07/12</td><td class="col-plan-name">20LES/南山美滿還本終身保險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="1000000">1,000,000</td><td class="col-twd" data-value="1000000">1,000,000</td></tr>
+                        <tr data-type="life"><td>N236052288</td><td class="col-policy-holder">張曼玲</td><td>88/07/15</td><td class="col-plan-name">20ALES/南山年年春還本終身保險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="100000">100,000</td><td class="col-twd" data-value="100000">100,000</td></tr>
+                        <tr data-type="life"><td>N236120408</td><td class="col-policy-holder">張曼玲</td><td>93/03/30</td><td class="col-plan-name">DDLC/南山人壽新康祥終身壽險-C型</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="1000000">1,000,000</td><td class="col-twd" data-value="1000000">1,000,000</td></tr>
+                        <tr data-type="life"><td>N236180710</td><td class="col-policy-holder">張曼玲</td><td>101/05/07</td><td class="col-plan-name">6UIWL/鑫利年年外幣增額終身</td><td class="col-type">壽險</td><td class="col-currency">美元</td><td class="col-original" data-value="380000">380,000</td><td class="col-twd" data-value="11606245">11,606,245</td></tr>
+                        <tr data-type="life"><td>N236182967</td><td class="col-policy-holder">張曼玲</td><td>101/06/27</td><td class="col-plan-name">6UIWL/鑫利年年外幣增額終身</td><td class="col-type">壽險</td><td class="col-currency">美元</td><td class="col-original" data-value="190000">190,000</td><td class="col-twd" data-value="5803122">5,803,122</td></tr>
+                    </tbody>
+                    <tfoot><tr class="table-footer grand-total"><td colspan="6" class="total-label">個人壽險總保障:</td><td colspan="2" class="total-value" id="total-grand-hongjunhui">NT$ 0</td></tr></tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- 洪瑾柔 -->
+        <div class="infographic-section section-person">
+            <div class="section-header collapsible">
+                <div class="flex items-center gap-3"><span class="section-icon">👧</span><span>被保險人: 洪瑾柔</span></div>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="section-content">
+                <table class="policy-table" id="table-hongjinrou">
+                    <thead>
+                        <tr>
+                            <th>保單號碼</th>
+                            <th class="col-policy-holder">要保人</th>
+                            <th>生效日</th>
+                            <th>險種名稱</th>
+                            <th class="col-type">類型</th>
+                            <th class="col-currency">幣別</th>
+                            <th class="col-original">保障-原幣</th>
+                            <th class="col-twd">保障-台幣</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-type="life"><td>N489068773</td><td class="col-policy-holder">張曼玲</td><td>94/01/10</td><td class="col-plan-name">20SALE/年年有餘還本終身</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="300000">300,000</td><td class="col-twd" data-value="300000">300,000</td></tr>
+                        <tr data-type="life"><td>N489068799</td><td class="col-policy-holder">張曼玲</td><td>94/01/10</td><td class="col-plan-name">DDLB/新康祥終身壽險-B型</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="500000">500,000</td><td class="col-twd" data-value="500000">500,000</td></tr>
+                        <tr data-type="life"><td>N236125678</td><td class="col-policy-holder">張曼玲</td><td>94/01/15</td><td class="col-plan-name">20SALE/年年有餘還本終身</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="200000">200,000</td><td class="col-twd" data-value="200000">200,000</td></tr>
+                        <tr data-type="life"><td>N733009734</td><td class="col-policy-holder">張曼玲</td><td>99/06/15</td><td class="col-plan-name">20JDL/健康兒童終身保險</td><td class="col-type">壽險</td><td class="col-currency">新台幣</td><td class="col-original" data-value="1000000">1,000,000</td><td class="col-twd" data-value="1000000">1,000,000</td></tr>
+                        <tr data-type="life"><td>N236166912</td><td class="col-policy-holder">張曼玲</td><td>99/12/23</td><td class="col-plan-name">20UPL/美寶2外幣終身壽險</td><td class="col-type">壽險</td><td class="col-currency">美元</td><td class="col-original" data-value="150000">150,000</td><td class="col-twd" data-value="4581412">4,581,412</td></tr>
+                        <tr data-type="life"><td>N236166925</td><td class="col-policy-holder">張曼玲</td><td>99/12/23</td><td class="col-plan-name">6JUALE/快樂兒童外幣增額還本</td><td class="col-type">壽險</td><td class="col-currency">美元</td><td class="col-original" data-value="33240">33,240</td><td class="col-twd" data-value="1015241">1,015,241</td></tr>
+                        <tr data-type="life"><td>N236182970</td><td class="col-policy-holder">張曼玲</td><td>101/06/27</td><td class="col-plan-name">6UIWL/鑫利年年外幣增額終身</td><td class="col-type">壽險</td><td class="col-currency">美元</td><td class="col-original" data-value="186200">186,200</td><td class="col-twd" data-value="5687060">5,687,060</td></tr>
+                    </tbody>
+                    <tfoot><tr class="table-footer grand-total"><td colspan="6" class="total-label">個人壽險總保障:</td><td colspan="2" class="total-value" id="total-grand-hongjinrou">NT$ 0</td></tr></tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const exchangeRate = 30.54275;
+            function formatNumber(num) { return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'); }
+
+            const originalPlans = new Map();
+            document.querySelectorAll('.col-plan-name').forEach(td => {
+                originalPlans.set(td, td.innerText.trim());
+            });
+
+            // 更新視圖：切換手機版/電腦版
+            function updateView(isMobile) {
+                if (isMobile) {
+                    document.body.classList.add('mobile-mode');
+                } else {
+                    document.body.classList.remove('mobile-mode');
+                }
+
+                // 險種名稱簡化邏輯
+                document.querySelectorAll('.col-plan-name').forEach(td => {
+                    const fullText = originalPlans.get(td);
+                    td.innerText = isMobile ? fullText.split('/')[0].trim() : fullText;
+                });
+
+                // 更新頁尾合計標籤的跨欄數
+                // 手機版隱藏 3 欄，合計標籤 colspan 改為 3
+                const colspanVal = isMobile ? 3 : 6;
+                document.querySelectorAll('tfoot .total-label').forEach(td => {
+                    td.setAttribute('colspan', colspanVal);
+                });
+            }
+
+            // 計算與格式化表格數據
+            function calculateTable(tableId) {
+                const table = document.getElementById(tableId);
+                let lifeTwd = 0;
+                let lifeUsd = 0;
+                const rows = table.querySelectorAll('tbody tr[data-type="life"]');
+                rows.forEach(row => {
+                    const originalCell = row.querySelector('.col-original');
+                    const twdCell = row.querySelector('.col-twd');
+                    const val = parseFloat(originalCell.dataset.value) || 0;
+                    const twdVal = parseFloat(twdCell.dataset.value) || 0;
+                    const isUsd = row.querySelector('.col-currency').textContent.includes('美元');
+
+                    if (isUsd) {
+                        lifeUsd += val;
+                        originalCell.innerHTML = `<span class="currency-usd">USD ${formatNumber(val)}</span>`;
+                    } else {
+                        originalCell.innerText = formatNumber(val);
+                    }
+                    lifeTwd += twdVal;
+                    twdCell.innerText = formatNumber(Math.round(twdVal));
+                });
+                
+                const personId = tableId.replace('table-', '');
+                const footerVal = document.getElementById(`total-grand-${personId}`);
+                if (footerVal) footerVal.innerText = `NT$ ${formatNumber(Math.round(lifeTwd))}`;
+                return { lifeTwd, lifeUsd };
+            }
+
+            // 執行初始計算
+            const tables = ['table-zhangmanling', 'table-hongjiaxian', 'table-hongjunhui', 'table-hongjinrou'];
+            let totalTwd = 0, totalUsd = 0;
+            tables.forEach(id => {
+                const res = calculateTable(id);
+                totalTwd += res.lifeTwd;
+                totalUsd += res.lifeUsd;
+            });
+
+            document.getElementById('summary-life-twd').innerText = 'NT$ ' + formatNumber(Math.round(totalTwd - totalUsd * exchangeRate));
+            document.getElementById('summary-life-usd').innerHTML = `<span class="currency-usd">USD ${formatNumber(Math.round(totalUsd))}</span>`;
+            document.getElementById('summary-life-grand').innerText = 'NT$ ' + formatNumber(Math.round(totalTwd));
+
+            // 趨勢圖渲染
+            const years = Array.from({length: 20}, (_, i) => (114 + i).toString());
+            const genTrend = (base, rate) => years.map((_, i) => Math.round(base * Math.pow(1 + rate, i)));
+            const dataZ = genTrend(2276, 0.012);
+            const dataX = genTrend(230, 0);
+            const dataH = genTrend(1950, 0.015);
+            const dataR = genTrend(1230, 0.015);
+            const dataF = years.map((_, i) => dataZ[i] + dataX[i] + dataH[i] + dataR[i]);
+
+            function drawChart(id, data, label) {
+                new Chart(document.getElementById(id), {
+                    type: 'line',
+                    data: { labels: years, datasets: [{ label: label, data: data, borderColor: '#3b82f6', tension: 0.2, fill: false }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+            drawChart('chart-family-total', dataF, '總計 (萬元)');
+            drawChart('chart-zhangmanling', dataZ, '張曼玲');
+            drawChart('chart-premium-hongjiaxian', dataX, '洪家顯');
+            drawChart('chart-hongjunhui', dataH, '洪君慧');
+            drawChart('chart-hongjinrou', dataR, '洪瑾柔');
+
+            // 摺疊控制函數
+            function setSectionState(header, expand, showDetails) {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('.toggle-icon');
+                if (expand) {
+                    header.classList.add('active');
+                    content.classList.add('expanded');
+                    content.style.maxHeight = '2500px';
+                    icon.innerText = '–';
+                    if (showDetails) content.classList.add('details-expanded');
+                } else {
+                    header.classList.remove('active');
+                    content.classList.remove('expanded', 'details-expanded');
+                    content.style.maxHeight = '0px';
+                    icon.innerText = '+';
+                }
+            }
+
+            const headers = document.querySelectorAll('.section-header.collapsible');
+            headers.forEach(h => {
+                h.addEventListener('click', () => {
+                    const isExpanded = h.classList.contains('active');
+                    setSectionState(h, !isExpanded, false);
+                });
+            });
+
+            // 手機版按鈕：隱藏欄位、簡化名稱、展開數據
+            document.getElementById('show-summary-btn').addEventListener('click', () => {
+                updateView(true);
+                headers.forEach(h => setSectionState(h, true, true));
+            });
+
+            // 電腦版按鈕（原顯示明細）：完整欄位、完整名稱、展開數據
+            document.getElementById('show-details-btn').addEventListener('click', () => {
+                updateView(false);
+                headers.forEach(h => setSectionState(h, true, true));
+            });
+
+            document.getElementById('print-btn').addEventListener('click', () => window.print());
+
+            // 檔案打開時預設為：手機版展示狀態 (欄位簡化 + 自動展開)
+            updateView(true);
+            headers.forEach(h => {
+                // 如果是趨勢圖則不一定強制展開明細(因為它本來就是預設 active 的)，但個人明細必須展開
+                if (h.closest('.section-person') || h.innerText.includes('被保險人')) {
+                    setSectionState(h, true, true);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
