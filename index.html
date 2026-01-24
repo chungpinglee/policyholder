@@ -14,7 +14,7 @@
             --radius-btn: 18px;
             --shadow-card: 0 8px 16px rgba(0,0,0,0.1);
             --shadow-hover: 0 20px 30px rgba(0,0,0,0.2);
-            --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
@@ -68,8 +68,6 @@
             font-weight: 900;
         }
 
-        .icon-emoji { font-size: 1.2rem; }
-
         header {
             padding: 25px 5%;
             text-align: center;
@@ -97,7 +95,6 @@
         
         .hidden-btn { opacity: 0; transform: translateY(20px); pointer-events: none; display: none; }
         .edit-mode .hidden-btn { opacity: 1; transform: translateY(0); pointer-events: auto; display: flex; }
-        #edit-toggle-btn.active { background: #FF4757; color: white; }
 
         .main-container { flex: 1; padding: 40px 5%; width: 100%; box-sizing: border-box; display: flex; justify-content: center; }
         .grid-level-1 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; width: 100%; max-width: 1400px; }
@@ -125,18 +122,15 @@
 
         .modal-body { flex: 1; padding: 30px; overflow-y: auto; background: #F9FAFB; }
 
-        /* 子按鈕區域改用 Flex 以實現寬度縮放 */
+        /* 子按鈕區域 */
         .level-2-grid { 
-            display: flex; 
-            flex-wrap: wrap; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
             gap: 20px; 
             margin-bottom: 20px; 
             transition: var(--transition);
-            align-items: flex-start;
         }
         .sub-btn { 
-            flex: 1 1 200px;
-            max-width: 300px;
             border-radius: var(--radius-btn); 
             padding: 25px 15px; 
             text-align: center; 
@@ -145,7 +139,7 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            min-height: 160px; /* 長度(高度)固定 */
+            min-height: 160px; /* 預設高度 */
             color: white; 
             transition: var(--transition); 
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
@@ -153,15 +147,17 @@
             overflow: hidden;
         }
         .sub-btn .emoji { font-size: 3.5rem; margin-bottom: 10px; transition: var(--transition); }
-        .sub-btn.active { flex: 1 1 280px; box-shadow: 0 15px 30px rgba(0,0,0,0.2); transform: scale(1.02); z-index: 5; }
+        .sub-btn div { font-weight: 800; transition: var(--transition); }
         
-        /* 核心需求：寬度縮小 50% */
-        .sub-btn.shrink-sibling { 
-            flex: 0 0 100px; /* 寬度顯著縮小 */
-            opacity: 0.7;
+        .sub-btn.active { box-shadow: 0 15px 30px rgba(0,0,0,0.2); transform: scale(1.02); z-index: 5; }
+        
+        /* 核心需求：長度(高度)縮小 50%，寬度不變，顏色不變 */
+        .sub-btn.shrink-sibling-height { 
+            min-height: 80px !important; 
+            opacity: 0.85;
         }
-        .sub-btn.shrink-sibling .emoji { font-size: 2.2rem; }
-        .sub-btn.shrink-sibling div { font-size: 0.8rem; white-space: nowrap; }
+        .sub-btn.shrink-sibling-height .emoji { font-size: 2rem; margin-bottom: 0; }
+        .sub-btn.shrink-sibling-height div { font-size: 0.9rem; }
 
         .level-3-section { display: none; margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 30px; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -189,8 +185,8 @@
         @media (max-width: 768px) {
             .grid-level-1 { grid-template-columns: 1fr; }
             .level-3-grid { grid-template-columns: 1fr; }
-            .sub-btn { flex: 1 1 140px; min-height: 120px; }
-            .sub-btn.shrink-sibling { flex: 0 0 70px; }
+            .sub-btn { min-height: 140px; }
+            .sub-btn.shrink-sibling-height { min-height: 70px !important; }
         }
     </style>
 </head>
@@ -198,7 +194,7 @@
 
     <div id="draggable-nav" class="nav-overlay">
         <button class="nav-btn" id="back-btn">
-            <span class="icon-emoji">⬅️</span>
+            <span style="font-size: 1.2rem;">⬅️</span>
             <span class="outline-text">回上頁</span>
         </button>
     </div>
@@ -270,7 +266,7 @@
     </div>
 
     <script>
-        // --- 資料結構 ---
+        // --- 完整資料結構 ---
         let pageData = {
             "categories": [
                 {
@@ -334,7 +330,7 @@
             const level3 = document.getElementById('level-3-section');
             const cat = pageData.categories[curCatIdx];
             
-            // 如果是統計頁面，直接關閉彈窗
+            // 如果是統計頁面(直達層級)，直接關閉彈窗
             if (cat && cat.title === "全家資產統計") {
                 closeModal('view-modal');
                 return;
@@ -343,7 +339,7 @@
             if (level3.style.display === 'block') {
                 level3.style.display = 'none';
                 curSubIdx = -1;
-                document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active', 'shrink-sibling'));
+                document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active', 'shrink-sibling-height'));
             } else if (viewModal.classList.contains('active')) {
                 closeModal('view-modal');
             } else {
@@ -400,13 +396,13 @@
             const section3 = document.getElementById('level-3-section');
             container.innerHTML = '';
             
-            // 核心需求：全家資產統計 - 直接顯示所有內容
+            // 核心需求：全家資產統計 - 直跳過中間層級直接顯示報表內容
             if (cat.title === "全家資產統計") {
                 container.style.display = 'none';
                 section3.style.display = 'block';
                 renderStatisticsDirectly(cat);
             } else {
-                container.style.display = 'flex';
+                container.style.display = 'grid';
                 if(!restoreSub) section3.style.display = 'none';
                 
                 cat.subCategories.forEach((sub, si) => {
@@ -421,7 +417,7 @@
                 
                 if(isEditMode) {
                     const addSub = document.createElement('div');
-                    addSub.className = 'add-new-btn'; addSub.style.minHeight='150px'; addSub.style.flex='0 0 150px'; addSub.innerHTML = '+ 新增';
+                    addSub.className = 'add-new-btn'; addSub.style.minHeight='160px'; addSub.innerHTML = '+ 新增';
                     addSub.onclick = () => openAdd('L2');
                     container.appendChild(addSub);
                 }
@@ -433,8 +429,9 @@
 
         function renderStatisticsDirectly(cat) {
             const grid = document.getElementById('level-3-grid');
-            document.getElementById('level-3-title').innerHTML = `📊 全家報表直達`;
+            document.getElementById('level-3-title').innerHTML = `📊 全家報表直達專區`;
             grid.innerHTML = '';
+            // 抓取該類別下所有子類別中的 items
             const allItems = cat.subCategories.flatMap(sub => sub.items);
             allItems.forEach((item, ii) => {
                 const card = document.createElement('a');
@@ -450,13 +447,13 @@
             curSubIdx = si;
             const subBtns = document.querySelectorAll('.sub-btn');
             
-            // 核心需求：其他項寬度縮小 50%，高度(長度)不變，顏色不變
+            // 核心需求：其他項寬度不變，長度(高度)縮小 50%，顏色不變
             subBtns.forEach((btn, i) => {
                 btn.classList.toggle('active', i === si);
                 if (i === si) {
-                    btn.classList.remove('shrink-sibling');
+                    btn.classList.remove('shrink-sibling-height');
                 } else {
-                    btn.classList.add('shrink-sibling');
+                    btn.classList.add('shrink-sibling-height');
                 }
             });
 
@@ -479,7 +476,7 @@
 
             if(isEditMode) {
                 const addCard = document.createElement('div');
-                addCard.className = 'add-new-btn'; addCard.style.minHeight='80px'; addCard.innerHTML = '+ 新增連結卡片';
+                addCard.className = 'add-new-btn'; addCard.style.minHeight='80px'; addCard.innerHTML = '+ 新增卡片';
                 addCard.onclick = () => openAdd('L3');
                 grid.appendChild(addCard);
             }
@@ -493,7 +490,7 @@
         }
         function handleOverlayClick(e, id) { if(e.target.id === id) closeModal(id); }
 
-        // --- 編輯功能 ---
+        // --- 編輯與系統功能 ---
         function openAdd(level) { editTarget = { level, type: 'add' }; resetForm(level); document.getElementById('form-modal').classList.add('active'); }
         function openEdit(e, level, indices) {
             e.stopPropagation(); editTarget = { level, type: 'edit', indices }; resetForm(level);
@@ -539,7 +536,7 @@
             const dataStr = JSON.stringify(pageData, null, 4);
             const html = document.documentElement.outerHTML.replace(/let pageData = \{([\s\S]*?)\};/, `let pageData = ${dataStr};`);
             const blob = new Blob([`<!DOCTYPE html>\n${html}`], {type: 'text/html'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "保單管理系統_更新.html"; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "全家保單系統_長度縮放更新.html"; a.click();
         }
 
         function saveAsClient() {
