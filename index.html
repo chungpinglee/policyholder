@@ -29,7 +29,7 @@
             overflow-x: hidden;
         }
 
-        /* --- 浮動導航按鈕 --- */
+        /* --- 浮動導航按鈕 (可移動) --- */
         .nav-overlay { 
             position: fixed; 
             top: 20px; 
@@ -51,12 +51,13 @@
             align-items: center;
             backdrop-filter: blur(12px); 
             -webkit-backdrop-filter: blur(12px);
-            cursor: pointer; 
+            cursor: move; 
             user-select: none; 
-            transition: all 0.2s ease; 
+            transition: background 0.2s, transform 0.2s; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             color: white;
             outline: none;
+            padding: 0;
         }
 
         .outline-text {
@@ -139,22 +140,30 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            min-height: 160px; /* 預設高度 */
+            min-height: 160px; 
             color: white; 
             transition: var(--transition); 
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
+            border: 6px solid transparent; /* 預設邊框透明 */
+            box-sizing: border-box;
         }
         .sub-btn .emoji { font-size: 3.5rem; margin-bottom: 10px; transition: var(--transition); }
         .sub-btn div { font-weight: 800; transition: var(--transition); }
         
-        .sub-btn.active { box-shadow: 0 15px 30px rgba(0,0,0,0.2); transform: scale(1.02); z-index: 5; }
+        /* 核心需求：點選項目時，邊框顏色為填滿效果的對比色 */
+        .sub-btn.active { 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2); 
+            transform: scale(1.02); 
+            z-index: 5; 
+            border-color: var(--contrast-border, #FFFF00); /* 由 JS 動態注入對比色 */
+        }
         
-        /* 核心需求：長度(高度)縮小 50%，寬度不變，顏色不變 */
         .sub-btn.shrink-sibling-height { 
             min-height: 80px !important; 
             opacity: 0.85;
+            border-width: 0px;
         }
         .sub-btn.shrink-sibling-height .emoji { font-size: 2rem; margin-bottom: 0; }
         .sub-btn.shrink-sibling-height div { font-size: 0.9rem; }
@@ -229,7 +238,6 @@
         </div>
     </div>
 
-    <!-- 編輯表單 -->
     <div id="form-modal" class="modal-overlay">
         <div class="modal-content" style="max-width:550px; height:auto;">
             <div class="modal-header">
@@ -266,87 +274,210 @@
     </div>
 
     <script>
-        // --- 完整資料結構 ---
+        // --- 完整數據結構 ---
         let pageData = {
-            "categories": [
+    "categories": [
+        {
+            "title": "家庭成員及保單各項健檢分析",
+            "desc": "整合全家語音分析、校正報告與個人保單詳情",
+            "icon": "👨‍👩‍👧‍👦",
+            "color": "#e86a92",
+            "subCategories": [
                 {
-                    "title": "家庭成員及保單各項健檢分析",
-                    "desc": "整合全家語音分析、校正報告與個人保單詳情",
-                    "icon": "👨‍👩‍👧‍👦",
-                    "color": "#e86a92",
-                    "subCategories": [
-                        { "name": "張曼玲", "emoji": "👩", "items": [{ "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1WiQNGejyy4O1v9rkl4IaArSqTakkd7-Z/view?usp=sharing", "icon": "🎬" }, { "title": "保單校正圖表分析", "desc": "視覺化缺口分析", "url": "#", "icon": "📊" }] },
-                        { "name": "洪家顯", "emoji": "👴", "items": [{ "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1y18J90IxJGIfUpedh9DG5Vq6BVtzQ5mt/view?usp=drive_link", "icon": "🎬" }] },
-                        { "name": "洪君慧", "emoji": "👩", "items": [{ "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1Cb3KxHuGCczxMWAvv2_0_E9vHTDg49Ey/view?usp=drive_link", "icon": "🎬" }] },
-                        { "name": "洪瑾柔", "emoji": "👧", "items": [{ "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1qhn5PUNNKta6amIGCIZMGecZo9ylXLS2/view?usp=drive_link", "icon": "🎬" }] }
+                    "name": "張曼玲",
+                    "emoji": "👩",
+                    "items": [
+                        { "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1WiQNGejyy4O1v9rkl4IaArSqTakkd7-Z/view?usp=sharing", "icon": "🎬" },
+                        { "title": "保單校正圖表分析", "desc": "視覺化缺口分析 (HTML網頁)", "url": "保單校正/母-保單校正圖表分析.html", "icon": "📊", "highlight": true },
+                        { "title": "南山保單校正表", "desc": "PDF文件", "url": "https://drive.google.com/file/d/1O0hMfWLIJqAG71VUmckb2lb22UVhetOb/view?usp=drive_link", "icon": "📉" },
+                        { "title": "投保紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/07da4602-6a6f-426a-8f0a-b9f590363a56", "icon": "🗂️" },
+                        { "title": "服務紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/b8d07eb0-2add-4a5e-a1bc-247ea10463d1", "icon": "🤝" },
+                        { "title": "理賠紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/d600e90c-cf3b-42a4-a052-124ec6fc1da9", "icon": "🩹" }
                     ]
                 },
                 {
-                    "title": "全家資產統計",
-                    "desc": "保障、價值、還本金、保費四表合一",
-                    "icon": "💰",
-                    "color": "#8D72E1",
-                    "subCategories": [
-                        {
-                            "name": "統計報表",
-                            "emoji": "📊",
-                            "items": [
-                                { "title": "全家保障統計表", "url": "全家統計表/全家保障統計表.html", "icon": "🛡️", "desc": "保障缺口與分析" },
-                                { "title": "全家保單價值", "url": "全家統計表/全家保單價值統計表.html", "icon": "💎", "desc": "資產累積現況" },
-                                { "title": "全家還本金統計", "url": "全家統計表/全家還本金統計表.html", "icon": "💵", "desc": "年度領回金額" },
-                                { "title": "全家保費統計", "url": "全家統計表/全家保費統計表.html", "icon": "💳", "desc": "年度支出明細" }
-                            ]
-                        }
+                    "name": "洪家顯",
+                    "emoji": "👴",
+                    "items": [
+                        { "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1y18J90IxJGIfUpedh9DG5Vq6BVtzQ5mt/view?usp=drive_link", "icon": "🎬" },
+                        { "title": "保單校正圖表分析", "desc": "視覺化缺口分析 (HTML網頁)", "url": "保單校正/父-保單校正圖表分析.html", "icon": "📊", "highlight": true },
+                        { "title": "南山保單校正表", "desc": "PDF文件", "url": "https://drive.google.com/file/d/15sGv6RHpRrpeTQo2-SLN7nZnGJdInfCR/view?usp=drive_link", "icon": "📉" },
+                        { "title": "投保紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/7a4cc072-5d89-4b9e-b158-778534b21083", "icon": "🗂️" },
+                        { "title": "服務紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/1a886271-7f5a-466d-adf3-e8caa8c62da6", "icon": "🤝" },
+                        { "title": "理賠紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/3fd21aa8-d1e8-404c-bcb0-6e1b108b488a", "icon": "🩹" }
                     ]
                 },
                 {
-                    "title": "產物保險",
-                    "desc": "汽車、機車、住宅火險與個人意外險",
-                    "icon": "🚗",
-                    "color": "#f0a261",
-                    "subCategories": [
-                        { "name": "汽車保險", "emoji": "🚗", "items": [{ "title": "車號:BBN-6532", "url": "#", "icon": "🚗", "desc": "續保日:115/08/11" }] },
-                        { "name": "住宅火險", "emoji": "🏠", "items": [{ "title": "台北市天母東路", "url": "#", "icon": "🏠", "desc": "續保日:115/03/22" }] },
-                        { "name": "產物保險總表", "emoji": "📋", "items": [{ "title": "全家產險總表", "url": "#", "icon": "📑", "desc": "完整明細" }] }
+                    "name": "洪君慧",
+                    "emoji": "👩",
+                    "items": [
+                        { "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1Cb3KxHuGCczxMWAvv2_0_E9vHTDg49Ey/view?usp=drive_link", "icon": "🎬" },
+                        { "title": "保單校正圖表分析", "desc": "視覺化缺口分析 (HTML網頁)", "url": "保單校正/大女兒-保單校正圖表分析.html", "icon": "📊", "highlight": true },
+                        { "title": "南山保單校正表", "desc": "PDF文件", "url": "https://drive.google.com/file/d/1OJdgvznZaM_jRoOUivY9GlJelYSfHQFO/view?usp=drive_link", "icon": "📉" },
+                        { "title": "投保紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/8092dae4-9928-4a93-bb8c-ba0654b31ea2", "icon": "🗂️" },
+                        { "title": "服務紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/4b6c98eb-b068-41ab-ab03-5d43b8abf66d", "icon": "🤝" },
+                        { "title": "理賠紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/7d375d4e-de3b-4745-9d98-5f562458cecf", "icon": "🩹" }
                     ]
                 },
                 {
-                    "title": "售後服務資源",
-                    "desc": "聯絡電話等相關資訊",
-                    "icon": "🤝",
-                    "color": "#46B3E6",
-                    "url": "https://chungpinglee.github.io/abc0480/售後服務資源/index.html.html",
-                    "subCategories": []
+                    "name": "洪瑾柔",
+                    "emoji": "👧",
+                    "items": [
+                        { "title": "保單健檢分析(影音)", "desc": "個人分析影音", "url": "https://drive.google.com/file/d/1qhn5PUNNKta6amIGCIZMGecZo9ylXLS2/view?usp=drive_link", "icon": "🎬" },
+                        { "title": "保單校正圖表分析", "desc": "視覺化缺口分析 (HTML網頁)", "url": "保單校正/小女兒-保單校正圖表分析.html", "icon": "📊", "highlight": true },
+                        { "title": "南山保單校正表", "desc": "PDF文件", "url": "https://drive.google.com/file/d/1eltiaBcHLL7cFgm7vLzSwDBaY0GLw2kj/view?usp=drive_link", "icon": "📉" },
+                        { "title": "投保紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/ed0495d8-85d6-4f88-9dfd-d675453ad923", "icon": "🗂️" },
+                        { "title": "服務紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/0033ea69-8212-4203-bdf6-cc8e3d445b1d", "icon": "🤝" },
+                        { "title": "理賠紀錄", "desc": "Evernote", "url": "https://share.evernote.com/note/2ade4e4f-a9ec-474c-8fa4-1e82c143aa17", "icon": "🩹" }
+                    ]
+                }
+            ],
+            "url": ""
+        },
+        {
+            "title": "全家資產統計",
+            "desc": "保障、價值、還本金、保費四表合一",
+            "icon": "💰",
+            "color": "#8D72E1",
+            "subCategories": [
+                {
+                    "name": "統計報表",
+                    "emoji": "📊",
+                    "items": [
+                        { "title": "全家保障統計表", "url": "全家統計表/全家保障統計表.html", "icon": "🛡️", "desc": "" },
+                        { "title": "全家保單價值", "url": "全家統計表/全家保單價值統計表.html", "icon": "💎", "desc": "" },
+                        { "title": "全家還本金統計", "url": "全家統計表/全家還本金統計表.html", "icon": "💵", "desc": "" },
+                        { "title": "全家保費統計", "url": "全家統計表/全家保費統計表.html", "icon": "💳", "desc": "" }
+                    ]
                 }
             ]
-        };
+        },
+        {
+            "title": "產物保險",
+            "desc": "汽車、機車、住宅火險與個人意外險",
+            "icon": "🚗",
+            "color": "#f0a261",
+            "subCategories": [
+                {
+                    "name": "汽車保險",
+                    "emoji": "🚗",
+                    "items": [
+                        { "title": "車號:BBN-6532，保險種類:乙式，保費:25753元，續保日:115/08/11", "url": "產物保險/1140811母(BOO-6OO2)車險輔助說明.html", "icon": "🚗", "desc": "" }
+                    ]
+                },
+                {
+                    "name": "住宅火險",
+                    "emoji": "🏠",
+                    "items": [
+                        { "title": "台北市士林區天母東路114號6樓，續保日:115/03/22", "url": "產物保險/1140322-母-住宅火險輔助說明.html", "icon": "🏠", "desc": "" },
+                        { "title": "新北市淡水區八勢路19號20樓，續保日:115/12/25", "url": "產物保險/1141225-大女兒-住宅火險輔助說明.html", "icon": "🏠", "desc": "" }
+                    ]
+                },
+                {
+                    "name": "產物保險總表",
+                    "emoji": "📋",
+                    "items": [
+                        { "title": "產險總表", "url": "產物保險/產物保險總表.html", "icon": "📋", "desc": "" }
+                    ]
+                }
+            ],
+            "url": ""
+        },
+        {
+            "title": "售後服務資源",
+            "desc": "聯絡電話等相關資訊",
+            "icon": "🤝",
+            "color": "#46B3E6",
+            "url": "https://chungpinglee.github.io/abc0480/售後服務資源/index.html.html",
+            "subCategories": []
+        }
+    ]
+};
 
         let isEditMode = false, curCatIdx = -1, curSubIdx = -1, editTarget = null;
         const colorPalette = ["#FF6B6B", "#4ECDC4", "#F9C74F", "#1A535C", "#9B5DE5", "#F15BB5"];
 
-        // --- 核心邏輯 ---
-        document.getElementById('back-btn').onclick = () => {
-            const viewModal = document.getElementById('view-modal');
-            const level3 = document.getElementById('level-3-section');
-            const cat = pageData.categories[curCatIdx];
+        // 輔助函式：根據背景顏色計算高對比色 (對比黑或白，或計算互補色)
+        function getContrastColor(hex) {
+            if (hex.indexOf('#') === 0) hex = hex.slice(1);
+            if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+            let r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+            // 使用亮度公式判定黑或白
+            let yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? '#1A2642' : '#FFFF00'; // 亮色背景配深藍，深色背景配鮮黃
+        }
+
+        // --- 核心邏輯：恢復回上頁可移動式功能 ---
+        (function() {
+            const dragElem = document.getElementById('draggable-nav');
+            const backBtn = document.getElementById('back-btn');
+            let isDragging = false, startX, startY, initialLeft, initialTop, hasMoved = false;
+
+            function smartGoBack() {
+                const viewModal = document.getElementById('view-modal');
+                const level3 = document.getElementById('level-3-section');
+                const cat = pageData.categories[curCatIdx];
+                
+                if (cat && cat.title === "全家資產統計") {
+                    closeModal('view-modal');
+                    return;
+                }
+                if (level3.style.display === 'block') {
+                    level3.style.display = 'none';
+                    curSubIdx = -1;
+                    document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active', 'shrink-sibling-height'));
+                } else if (viewModal.classList.contains('active')) {
+                    closeModal('view-modal');
+                } else {
+                    try { window.history.back(); } catch(e) {}
+                }
+            }
+
+            const startHandler = (e) => {
+                isDragging = true; 
+                hasMoved = false;
+                const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                startX = clientX; 
+                startY = clientY;
+                const r = dragElem.getBoundingClientRect();
+                initialLeft = r.left; 
+                initialTop = r.top;
+                dragElem.style.transition = 'none';
+            };
+
+            const moveHandler = (e) => {
+                if (!isDragging) return;
+                const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true;
+                const newLeft = initialLeft + dx;
+                const newTop = initialTop + dy;
+                dragElem.style.left = `${Math.max(10, Math.min(newLeft, window.innerWidth - 70))}px`;
+                dragElem.style.top = `${Math.max(10, Math.min(newTop, window.innerHeight - 70))}px`;
+            };
+
+            const endHandler = () => { 
+                if (!isDragging) return;
+                isDragging = false; 
+                dragElem.style.transition = 'all 0.3s ease-out';
+            };
+
+            dragElem.addEventListener('mousedown', startHandler);
+            window.addEventListener('mousemove', moveHandler);
+            window.addEventListener('mouseup', endHandler);
+            dragElem.addEventListener('touchstart', startHandler, { passive: false });
+            window.addEventListener('touchmove', moveHandler, { passive: false });
+            window.addEventListener('touchend', endHandler);
             
-            // 如果是統計頁面(直達層級)，直接關閉彈窗
-            if (cat && cat.title === "全家資產統計") {
-                closeModal('view-modal');
-                return;
-            }
+            backBtn.addEventListener('click', (e) => {
+                if (!hasMoved) smartGoBack();
+            });
+        })();
 
-            if (level3.style.display === 'block') {
-                level3.style.display = 'none';
-                curSubIdx = -1;
-                document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active', 'shrink-sibling-height'));
-            } else if (viewModal.classList.contains('active')) {
-                closeModal('view-modal');
-            } else {
-                window.history.back();
-            }
-        };
-
+        // --- 系統功能 ---
         function toggleEditMode() {
             if (!isEditMode) {
                 let pwd = prompt("請輸入管理密碼：");
@@ -396,7 +527,6 @@
             const section3 = document.getElementById('level-3-section');
             container.innerHTML = '';
             
-            // 核心需求：全家資產統計 - 直跳過中間層級直接顯示報表內容
             if (cat.title === "全家資產統計") {
                 container.style.display = 'none';
                 section3.style.display = 'block';
@@ -408,7 +538,11 @@
                 cat.subCategories.forEach((sub, si) => {
                     const btn = document.createElement('div');
                     btn.className = `sub-btn`;
-                    btn.style.backgroundColor = colorPalette[si % 6];
+                    const bgColor = colorPalette[si % 6];
+                    btn.style.backgroundColor = bgColor;
+                    // 先計算對比色備用
+                    btn.style.setProperty('--contrast-border', getContrastColor(bgColor));
+                    
                     btn.innerHTML = `<div class="emoji">${sub.emoji}</div><div style="font-weight:800">${sub.name}</div>
                         <div class="btn-overlay"><div class="mini-btn eb" onclick="openEdit(event, 'L2', [${idx}, ${si}])">✎</div><div class="mini-btn db" onclick="deleteItem(event, 'L2', [${idx}, ${si}])">✕</div></div>`;
                     btn.onclick = () => renderL3(si);
@@ -431,7 +565,6 @@
             const grid = document.getElementById('level-3-grid');
             document.getElementById('level-3-title').innerHTML = `📊 全家報表直達專區`;
             grid.innerHTML = '';
-            // 抓取該類別下所有子類別中的 items
             const allItems = cat.subCategories.flatMap(sub => sub.items);
             allItems.forEach((item, ii) => {
                 const card = document.createElement('a');
@@ -447,7 +580,6 @@
             curSubIdx = si;
             const subBtns = document.querySelectorAll('.sub-btn');
             
-            // 核心需求：其他項寬度不變，長度(高度)縮小 50%，顏色不變
             subBtns.forEach((btn, i) => {
                 btn.classList.toggle('active', i === si);
                 if (i === si) {
@@ -490,7 +622,6 @@
         }
         function handleOverlayClick(e, id) { if(e.target.id === id) closeModal(id); }
 
-        // --- 編輯與系統功能 ---
         function openAdd(level) { editTarget = { level, type: 'add' }; resetForm(level); document.getElementById('form-modal').classList.add('active'); }
         function openEdit(e, level, indices) {
             e.stopPropagation(); editTarget = { level, type: 'edit', indices }; resetForm(level);
@@ -536,7 +667,7 @@
             const dataStr = JSON.stringify(pageData, null, 4);
             const html = document.documentElement.outerHTML.replace(/let pageData = \{([\s\S]*?)\};/, `let pageData = ${dataStr};`);
             const blob = new Blob([`<!DOCTYPE html>\n${html}`], {type: 'text/html'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "全家保單系統_長度縮放更新.html"; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "全家保單系統_對比邊框版.html"; a.click();
         }
 
         function saveAsClient() {
