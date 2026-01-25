@@ -122,11 +122,16 @@
 
         .modal-body { flex: 1; padding: 30px; overflow-y: auto; background: #F9FAFB; }
 
-        /* 心跳動畫定義 */
+        /* 動畫定義 */
         @keyframes heartbeat {
             0% { transform: scale(1.02); }
             50% { transform: scale(1.08); }
             100% { transform: scale(1.02); }
+        }
+
+        @keyframes emojiBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         /* 子按鈕區域 */
@@ -155,7 +160,7 @@
             border: 6px solid transparent; 
             box-sizing: border-box;
         }
-        .sub-btn .emoji { font-size: 3.5rem; margin-bottom: 10px; transition: var(--transition); }
+        .sub-btn .emoji { font-size: 3.5rem; margin-bottom: 10px; transition: var(--transition); display: inline-block; }
         .sub-btn div { font-weight: 800; transition: var(--transition); }
         
         .sub-btn.active { 
@@ -164,6 +169,7 @@
             border-color: var(--contrast-border, #FFFF00); 
             animation: heartbeat 1.5s infinite ease-in-out;
         }
+        .sub-btn.active .emoji { animation: emojiBounce 0.8s infinite ease-in-out; }
         
         .sub-btn.shrink-sibling-height { 
             min-height: 80px !important; 
@@ -171,7 +177,7 @@
             border-width: 0px;
             animation: none; 
         }
-        .sub-btn.shrink-sibling-height .emoji { font-size: 2rem; margin-bottom: 0; }
+        .sub-btn.shrink-sibling-height .emoji { font-size: 2rem; margin-bottom: 0; animation: none; }
         .sub-btn.shrink-sibling-height div { font-size: 0.9rem; }
 
         .level-3-section { display: none; margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 30px; animation: fadeIn 0.4s ease; }
@@ -184,19 +190,25 @@
             text-decoration: none; color: var(--text-dark); border: 1px solid #eee; transition: var(--transition);
             position: relative;
         }
-        .link-card:hover { border-color: #D93025; background: #FFF5F5; transform: translateX(5px); }
         
-        /* 核心需求：資產統計表的懸停填滿深綠色，文字白色 */
-        .stat-link-card:hover {
-            background-color: #006400 !important; /* 深綠色背景 */
+        /* 滑鼠滑過詳細資料項目：文字白色，填滿效果綠色 */
+        .link-card:hover { 
+            background-color: #008000 !important; /* 綠色 */
+            color: #FFFFFF !important;
+            transform: translateX(5px);
             border-color: #004d00 !important;
         }
-        .stat-link-card:hover strong, 
-        .stat-link-card:hover span {
-            color: #FFFFFF !important; /* 白色文字 */
+        .link-card:hover strong, 
+        .link-card:hover span {
+            color: #FFFFFF !important;
         }
-        .stat-link-card:hover .card-icon {
-            background-color: rgba(255, 255, 255, 0.2) !important; /* 圖示圈圈也變透明白色 */
+        .link-card:hover .card-icon {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* 核心需求：全家報表項目懸停視覺與成員項目統一 (綠色) */
+        .stat-link-card:hover {
+            background-color: #008000 !important; /* 調整為綠色 */
         }
 
         .link-card .card-icon { font-size: 2rem; margin-right: 18px; width: 55px; height: 55px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: var(--transition); }
@@ -294,7 +306,7 @@
     </div>
 
     <script>
-        // --- 完整數據結構恢復 ---
+        // --- 恢復完整數據結構 ---
         let pageData = {
     "categories": [
         {
@@ -434,32 +446,21 @@
                 const viewModal = document.getElementById('view-modal');
                 const level3 = document.getElementById('level-3-section');
                 const cat = pageData.categories[curCatIdx];
-                
-                if (cat && cat.title === "全家資產統計") {
-                    closeModal('view-modal');
-                    return;
-                }
+                if (cat && cat.title === "全家資產統計") { closeModal('view-modal'); return; }
                 if (level3.style.display === 'block') {
-                    level3.style.display = 'none';
-                    curSubIdx = -1;
+                    level3.style.display = 'none'; curSubIdx = -1;
                     document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active', 'shrink-sibling-height'));
-                } else if (viewModal.classList.contains('active')) {
-                    closeModal('view-modal');
-                } else {
-                    try { window.history.back(); } catch(e) {}
-                }
+                } else if (viewModal.classList.contains('active')) { closeModal('view-modal'); }
+                else { try { window.history.back(); } catch(e) {} }
             }
 
             const startHandler = (e) => {
-                isDragging = true; 
-                hasMoved = false;
+                isDragging = true; hasMoved = false;
                 const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
                 const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-                startX = clientX; 
-                startY = clientY;
+                startX = clientX; startY = clientY;
                 const r = dragElem.getBoundingClientRect();
-                initialLeft = r.left; 
-                initialTop = r.top;
+                initialLeft = r.left; initialTop = r.top;
                 dragElem.style.transition = 'none';
             };
 
@@ -467,20 +468,14 @@
                 if (!isDragging) return;
                 const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
                 const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-                const dx = clientX - startX;
-                const dy = clientY - startY;
+                const dx = clientX - startX, dy = clientY - startY;
                 if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true;
-                const newLeft = initialLeft + dx;
-                const newTop = initialTop + dy;
+                const newLeft = initialLeft + dx, newTop = initialTop + dy;
                 dragElem.style.left = `${Math.max(10, Math.min(newLeft, window.innerWidth - 70))}px`;
                 dragElem.style.top = `${Math.max(10, Math.min(newTop, window.innerHeight - 70))}px`;
             };
 
-            const endHandler = () => { 
-                if (!isDragging) return;
-                isDragging = false; 
-                dragElem.style.transition = 'all 0.3s ease-out';
-            };
+            const endHandler = () => { isDragging = false; dragElem.style.transition = 'all 0.3s ease-out'; };
 
             dragElem.addEventListener('mousedown', startHandler);
             window.addEventListener('mousemove', moveHandler);
@@ -488,10 +483,7 @@
             dragElem.addEventListener('touchstart', startHandler, { passive: false });
             window.addEventListener('touchmove', moveHandler, { passive: false });
             window.addEventListener('touchend', endHandler);
-            
-            backBtn.addEventListener('click', (e) => {
-                if (!hasMoved) smartGoBack();
-            });
+            backBtn.addEventListener('click', () => { if (!hasMoved) smartGoBack(); });
         })();
 
         function toggleEditMode() {
@@ -510,61 +502,40 @@
         }
 
         function renderL1() {
-            const grid = document.getElementById('level-1-grid');
-            grid.innerHTML = '';
+            const grid = document.getElementById('level-1-grid'); grid.innerHTML = '';
             pageData.categories.forEach((cat, i) => {
-                const card = document.createElement('div');
-                card.className = 'main-card';
-                card.style.backgroundColor = cat.color;
+                const card = document.createElement('div'); card.className = 'main-card'; card.style.backgroundColor = cat.color;
                 card.innerHTML = `<div class="icon-large">${cat.icon}</div><div><h2>${cat.title}</h2><p>${cat.desc}</p></div>
                     <div class="btn-overlay"><div class="mini-btn eb" onclick="openEdit(event, 'L1', [${i}])">✎</div><div class="mini-btn db" onclick="deleteItem(event, 'L1', [${i}])">✕</div></div>`;
-                card.onclick = () => {
-                    if (cat.url && cat.url !== '#' && !isEditMode) window.open(cat.url, '_blank');
-                    else openView(i);
-                };
+                card.onclick = () => { if (cat.url && cat.url !== '#' && !isEditMode) window.open(cat.url, '_blank'); else openView(i); };
                 grid.appendChild(card);
             });
             if(isEditMode) {
-                const add = document.createElement('div');
-                add.className = 'add-new-btn'; add.style.minHeight='240px'; add.innerHTML = '+ 新增分類';
-                add.onclick = () => openAdd('L1');
-                grid.appendChild(add);
+                const add = document.createElement('div'); add.className = 'add-new-btn'; add.style.minHeight='240px'; add.innerHTML = '+ 新增分類';
+                add.onclick = () => openAdd('L1'); grid.appendChild(add);
             }
         }
 
         function openView(idx, restoreSub = false) {
-            curCatIdx = idx;
-            const cat = pageData.categories[idx];
-            const titleEl = document.getElementById('modal-title');
-            titleEl.innerHTML = `${cat.icon} ${cat.title}`;
-            titleEl.style.color = cat.color;
-            const container = document.getElementById('level-2-container');
-            const section3 = document.getElementById('level-3-section');
+            curCatIdx = idx; const cat = pageData.categories[idx]; const titleEl = document.getElementById('modal-title');
+            titleEl.innerHTML = `${cat.icon} ${cat.title}`; titleEl.style.color = cat.color;
+            const container = document.getElementById('level-2-container'); const section3 = document.getElementById('level-3-section');
             container.innerHTML = '';
             
             if (cat.title === "全家資產統計") {
-                container.style.display = 'none';
-                section3.style.display = 'block';
-                renderStatisticsDirectly(cat);
+                container.style.display = 'none'; section3.style.display = 'block'; renderStatisticsDirectly(cat);
             } else {
-                container.style.display = 'grid';
-                if(!restoreSub) section3.style.display = 'none';
+                container.style.display = 'grid'; if(!restoreSub) section3.style.display = 'none';
                 cat.subCategories.forEach((sub, si) => {
-                    const btn = document.createElement('div');
-                    btn.className = `sub-btn`;
-                    const bgColor = colorPalette[si % 6];
-                    btn.style.backgroundColor = bgColor;
-                    btn.style.setProperty('--contrast-border', getContrastColor(bgColor));
+                    const btn = document.createElement('div'); btn.className = `sub-btn`; const bgColor = colorPalette[si % 6];
+                    btn.style.backgroundColor = bgColor; btn.style.setProperty('--contrast-border', getContrastColor(bgColor));
                     btn.innerHTML = `<div class="emoji">${sub.emoji}</div><div style="font-weight:800">${sub.name}</div>
                         <div class="btn-overlay"><div class="mini-btn eb" onclick="openEdit(event, 'L2', [${idx}, ${si}])">✎</div><div class="mini-btn db" onclick="deleteItem(event, 'L2', [${idx}, ${si}])">✕</div></div>`;
-                    btn.onclick = () => renderL3(si);
-                    container.appendChild(btn);
+                    btn.onclick = () => renderL3(si); container.appendChild(btn);
                 });
                 if(isEditMode) {
-                    const addSub = document.createElement('div');
-                    addSub.className = 'add-new-btn'; addSub.style.minHeight='160px'; addSub.innerHTML = '+ 新增';
-                    addSub.onclick = () => openAdd('L2');
-                    container.appendChild(addSub);
+                    const addSub = document.createElement('div'); addSub.className = 'add-new-btn'; addSub.style.minHeight='160px'; addSub.innerHTML = '+ 新增';
+                    addSub.onclick = () => openAdd('L2'); container.appendChild(addSub);
                 }
             }
             document.getElementById('view-modal').classList.add('active');
@@ -572,15 +543,13 @@
         }
 
         function renderStatisticsDirectly(cat) {
-            const grid = document.getElementById('level-3-grid');
-            document.getElementById('level-3-title').innerHTML = `📊 全家報表直達專區`;
+            const grid = document.getElementById('level-3-grid'); 
+            // 核心需求：更名為「全家報表」
+            document.getElementById('level-3-title').innerHTML = `📊 全家報表`; 
             grid.innerHTML = '';
             const allItems = cat.subCategories.flatMap(sub => sub.items);
             allItems.forEach((item, ii) => {
-                const card = document.createElement('a');
-                // 加入特定類別 stat-link-card 以供懸停樣式使用
-                card.className = 'link-card stat-link-card';
-                card.href = 'javascript:void(0)';
+                const card = document.createElement('a'); card.className = 'link-card stat-link-card'; card.href = 'javascript:void(0)';
                 card.onclick = () => !isEditMode && window.open(item.url, '_blank');
                 card.innerHTML = `<div class="card-icon">${item.icon}</div><div><strong>${item.title}</strong><span>${item.desc || ''}</span></div>`;
                 grid.appendChild(card);
@@ -588,49 +557,36 @@
         }
 
         function renderL3(si) {
-            curSubIdx = si;
-            const subBtns = document.querySelectorAll('.sub-btn');
+            curSubIdx = si; const subBtns = document.querySelectorAll('.sub-btn');
             subBtns.forEach((btn, i) => {
                 btn.classList.toggle('active', i === si);
-                if (i === si) btn.classList.remove('shrink-sibling-height');
-                else btn.classList.add('shrink-sibling-height');
+                if (i === si) btn.classList.remove('shrink-sibling-height'); else btn.classList.add('shrink-sibling-height');
             });
             const sub = pageData.categories[curCatIdx].subCategories[si];
             const section = document.getElementById('level-3-section'), grid = document.getElementById('level-3-grid');
-            section.style.display = 'block';
-            document.getElementById('level-3-title').innerHTML = `${sub.emoji} ${sub.name} - 詳細資料`;
-            grid.innerHTML = '';
+            section.style.display = 'block'; document.getElementById('level-3-title').innerHTML = `${sub.emoji} ${sub.name} - 詳細資料`; grid.innerHTML = '';
             sub.items.forEach((item, ii) => {
-                const card = document.createElement('a');
-                card.className = 'link-card';
-                card.href = 'javascript:void(0)';
+                const card = document.createElement('a'); card.className = 'link-card'; card.href = 'javascript:void(0)';
                 card.onclick = () => !isEditMode && item.url !== '#' && window.open(item.url, '_blank');
                 card.innerHTML = `<div class="card-icon">${item.icon}</div><div><strong>${item.title}</strong><span>${item.desc || ''}</span></div>
                     <div class="btn-overlay"><div class="mini-btn eb" onclick="openEdit(event, 'L3', [${curCatIdx}, ${si}, ${ii}])">✎</div><div class="mini-btn db" onclick="deleteItem(event, 'L3', [${curCatIdx}, ${si}, ${ii}])">✕</div></div>`;
                 grid.appendChild(card);
             });
             if(isEditMode) {
-                const addCard = document.createElement('div');
-                addCard.className = 'add-new-btn'; addCard.style.minHeight='80px'; addCard.innerHTML = '+ 新增卡片';
-                addCard.onclick = () => openAdd('L3');
-                grid.appendChild(addCard);
+                const addCard = document.createElement('div'); addCard.className = 'add-new-btn'; addCard.style.minHeight='80px'; addCard.innerHTML = '+ 新增卡片';
+                addCard.onclick = () => openAdd('L3'); grid.appendChild(addCard);
             }
             setTimeout(() => { section.scrollIntoView({ behavior: 'smooth' }); }, 150);
         }
 
-        function closeModal(id) { 
-            document.getElementById(id).classList.remove('active'); 
-            if (id === 'view-modal') { curCatIdx = -1; curSubIdx = -1; }
-        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); if (id === 'view-modal') { curCatIdx = -1; curSubIdx = -1; } }
         function handleOverlayClick(e, id) { if(e.target.id === id) closeModal(id); }
-
         function openAdd(level) { editTarget = { level, type: 'add' }; resetForm(level); document.getElementById('form-modal').classList.add('active'); }
         function openEdit(e, level, indices) {
             e.stopPropagation(); editTarget = { level, type: 'edit', indices }; resetForm(level);
             let d = (level==='L1') ? pageData.categories[indices[0]] : (level==='L2' ? pageData.categories[indices[0]].subCategories[indices[1]] : pageData.categories[indices[0]].subCategories[indices[1]].items[indices[2]]);
             document.getElementById('input-title').value = d.title || d.name || "";
-            document.getElementById('input-desc').value = d.desc || "";
-            document.getElementById('input-url').value = d.url || "";
+            document.getElementById('input-desc').value = d.desc || ""; document.getElementById('input-url').value = d.url || "";
             document.getElementById('input-icon').value = d.icon || d.emoji || "";
             if(level==='L1') document.getElementById('input-color').value = d.color;
             document.getElementById('form-modal').classList.add('active');
@@ -664,23 +620,19 @@
             else pageData.categories[idx[0]].subCategories[idx[1]].items.splice(idx[2], 1);
             renderL1(); if(curCatIdx !== -1) openView(curCatIdx, true);
         }
-
         function saveAndDownload() {
             const dataStr = JSON.stringify(pageData, null, 4);
             const html = document.documentElement.outerHTML.replace(/let pageData = \{([\s\S]*?)\};/, `let pageData = ${dataStr};`);
             const blob = new Blob([`<!DOCTYPE html>\n${html}`], {type: 'text/html'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "全家保單系統_最終更新版.html"; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "全家保單系統_全家報表視覺更新.html"; a.click();
         }
-
         function saveAsClient() {
-            const doc = document.documentElement.cloneNode(true);
-            doc.querySelector('.floating-toolbar').style.display = 'none';
+            const doc = document.documentElement.cloneNode(true); doc.querySelector('.floating-toolbar').style.display = 'none';
             const dataStr = JSON.stringify(pageData, null, 4);
             const html = doc.outerHTML.replace(/let pageData = \{([\s\S]*?)\};/, `let pageData = ${dataStr};`);
             const blob = new Blob([`<!DOCTYPE html>\n${html}`], {type: 'text/html'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "全家保單資產管理專區.html"; a.click();
         }
-
         renderL1();
     </script>
 
