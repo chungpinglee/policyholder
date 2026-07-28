@@ -1,0 +1,575 @@
+<html lang="zh-TW"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客戶管理</title> <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px; /* Existing padding */
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scrollbar from animations */
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 750px;
+            position: relative;
+            z-index: 1; /* Ensure main content is above default stacked elements */
+        }
+        h1 {
+            color: #ffffff; /* White text for the title */
+            background-color: #007bff; /* Blue background for the title */
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+        }
+        .admin-panel-container {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        #toggleAdminButton {
+            padding: 8px 10px;
+            font-size: 18px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            align-self: flex-start;
+            flex-shrink: 0;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            line-height: 1.2;
+        }
+        #toggleAdminButton:hover {
+            background-color: #5a6268;
+        }
+        .admin-section {
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            text-align: left;
+            flex-grow: 1;
+        }
+        .admin-section.hidden {
+            display: none;
+        }
+        .action-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .action-row .menu-button {
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .inputs-container {
+            display: flex;
+            flex-grow: 1;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .inputs-container input[type="text"],
+        .inputs-container input[type="url"],
+        .inputs-container input[type="number"] {
+            padding: 8px;
+            margin-bottom: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        #newButtonText { flex: 1 1 150px; min-width: 120px; }
+        #newButtonUrl { flex: 1 1 200px; min-width: 150px; }
+        #newButtonPosition { flex: 0 1 120px; min-width: 100px; }
+        #removeButtonNumber { flex: 1 1 150px; min-width: 120px;}
+        #newFileNameInput { flex: 1 1 250px; min-width: 200px; }
+        .menu-button {
+            padding: 8px 15px;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 5px;
+        }
+        .menu-button.add { background-color: #28a745; }
+        .menu-button.remove { background-color: #dc3545; }
+        .menu-button.save-as { background-color: #17a2b8; }
+        .menu-button:hover {
+            color: white !important;
+            background-color: #0056b3 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-link:hover {
+            color: #ffffff !important;
+            background-color: #FF0000 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+         .button-link:active { transform: translateY(0); }
+        .button-link-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 15px;
+        }
+        .button-link {
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #000000;
+            background-color: #90EE90;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            text-align: center;
+            flex-grow: 1;
+            flex-shrink: 1;
+            min-width: 200px;
+            max-width: 100%;
+        }
+        hr {
+             border: 0;
+             height: 1px;
+             background: #ced4da;
+             margin: 20px 0;
+        }
+
+        /* Motorcycle Race Animation Styles - START */
+        .motorcycle {
+            position: fixed;
+            right: -90px; 
+            font-size: 26px; 
+            line-height: 1;
+            z-index: 9990;
+            pointer-events: none;
+            animation-name: raceMotorcycleRightToLeft;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            display: flex; 
+            align-items: center; 
+        }
+
+        .moto-indicator {
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            width: 20px;  
+            height: 20px; 
+            border-radius: 50%; 
+            margin-left: 5px; /* Space after the emoji */
+            flex-shrink: 0; 
+            color: white;     
+            font-size: 12px;  
+            font-weight: bold;
+        }
+        .moto-indicator.red { background-color: #E74C3C; } 
+        .moto-indicator.green { background-color: #2ECC71; } 
+        .moto-indicator.blue { background-color: #3498DB; } 
+        .moto-indicator.camo {
+            background: repeating-linear-gradient(45deg, #556B2F, #556B2F 3px, #8FBC8F 3px, #8FBC8F 6px);
+        }
+
+        .moto-emoji {
+            display: inline-block; 
+            /* transform: scaleX(-1); REMOVED: Emoji now faces right (default) */
+        }
+
+
+        #motorcycle1 { top: 5px; } 
+        #motorcycle2 { top: 30px; } 
+        #motorcycle3 { top: 55px; } 
+        #motorcycle4 { top: 80px; } 
+
+        @keyframes raceMotorcycleRightToLeft { 
+            0% {
+                transform: translateX(0); 
+            }
+            100% {
+                transform: translateX(calc(-100vw - 100px)); 
+            }
+        }
+        /* Motorcycle Race Animation Styles - END */
+
+    </style>
+</head>
+<body>
+    <div class="motorcycle" id="motorcycle1" style="animation-duration: 6.7s;">
+        <span class="moto-emoji">🏍️</span><span class="moto-indicator red">1</span>
+    </div>
+    <div class="motorcycle" id="motorcycle2" style="animation-duration: 8.34s;">
+        <span class="moto-emoji">🏍️</span><span class="moto-indicator green">2</span>
+    </div>
+    <div class="motorcycle" id="motorcycle3" style="animation-duration: 9.22s;">
+        <span class="moto-emoji">🏍️</span><span class="moto-indicator blue">3</span>
+    </div>
+    <div class="motorcycle" id="motorcycle4" style="animation-duration: 7.52s;">
+        <span class="moto-emoji">🏍️</span><span class="moto-indicator camo">4</span>
+    </div>
+    <div class="container">
+        <h1 id="pageMainTitle">客戶管理</h1>
+
+        <div class="admin-panel-container">
+            <button id="toggleAdminButton" title="隱藏設定區塊">✕</button>
+            <div class="admin-section" id="adminSectionContent">
+                <div class="action-row">
+                    <button class="menu-button add" onclick="handleAddNewButton()">新增按鈕</button>
+                    <div class="inputs-container">
+                        <input type="text" id="newButtonText" placeholder="按鈕文字">
+                        <input type="url" id="newButtonUrl" placeholder="按鈕網址 (例: page.html)">
+                        <input type="number" id="newButtonPosition" placeholder="插入位置編號 (可選)" min="1" max="12">
+                    </div>
+                </div>
+                <hr>
+                <div class="action-row">
+                    <button class="menu-button remove" onclick="handleRemoveButton()">減少按鈕</button>
+                    <div class="inputs-container">
+                        <input type="number" id="removeButtonNumber" placeholder="要移除的按鈕編號" min="1" max="11">
+                    </div>
+                </div>
+                <hr>
+                <div class="action-row">
+                    <button class="menu-button save-as" id="handleSaveAsButton">修改標題並另存</button>
+                    <div class="inputs-container">
+                        <input type="text" id="newFileNameInput" placeholder="新檔案標題 (預設為目前標題)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-link-container" id="buttonLinkContainer"><a href="主要入口.html" class="button-link">1. 回入口</a><a href="客戶管理/李麗琴全家/李麗琴全家首頁.html" class="button-link">2. 李麗琴全家首頁</a><a href="客戶管理/林峰賦全家/林峰賦全家首頁.html" class="button-link">3. 林峰賦全家首頁</a><a href="客戶管理/張麗珍全家/張麗珍全家首頁.html" class="button-link">4. 張麗珍全家</a><a href="客戶管理/林甘超英全家/林甘超英全家首頁.html" class="button-link">5. 林甘超英全家</a><a href="客戶管理/張曼玲全家/張曼玲全家首頁.html" class="button-link">6. 張曼玲全家</a><a href="客戶管理/李玉鳳全家/李玉鳳全家首頁.html" class="button-link">7. 李玉鳳全家</a><a href="客戶管理/王如彬全家/王如彬全家首頁.html" class="button-link">8. 王如彬全家首頁</a><a href="https://chungpinglee.github.io/abc0480/%E7%B7%A8%E8%99%9F_A03764.html" class="button-link">9. 李素碧全家</a><a href="https://chungpinglee.github.io/abc0480/A73361_2025-12-15.html" class="button-link">10. 下一版</a><a href="打擊太空船.html" class="button-link">11. 休息一下</a></div>
+    </div>
+
+    <script>
+        const buttonContainer = document.getElementById('buttonLinkContainer');
+        const newButtonTextInput = document.getElementById('newButtonText');
+        const newButtonUrlInput = document.getElementById('newButtonUrl');
+        const newButtonPositionInput = document.getElementById('newButtonPosition');
+        const removeButtonNumberInput = document.getElementById('removeButtonNumber');
+        const newFileNameInput = document.getElementById('newFileNameInput');
+        const saveAsButton = document.getElementById('handleSaveAsButton');
+        const pageMainTitleH1 = document.getElementById('pageMainTitle');
+        const toggleAdminButton = document.getElementById('toggleAdminButton');
+        const adminSectionContent = document.getElementById('adminSectionContent');
+        
+        let currentLocalStorageKey = 'customMenuButtons_客戶管理_1767107691515_v3';
+        let currentAdminPanelVisibleKey = 'adminPanelVisible_客戶管理_1767107691515_v3';
+
+        const initialButtons = [
+  {
+    "text": "回入口",
+    "href": "主要入口.html"
+  },
+  {
+    "text": "李麗琴全家首頁",
+    "href": "客戶管理/李麗琴全家/李麗琴全家首頁.html"
+  },
+  {
+    "text": "林峰賦全家首頁",
+    "href": "客戶管理/林峰賦全家/林峰賦全家首頁.html"
+  },
+  {
+    "text": "張麗珍全家",
+    "href": "客戶管理/張麗珍全家/張麗珍全家首頁.html"
+  },
+  {
+    "text": "林甘超英全家",
+    "href": "客戶管理/林甘超英全家/林甘超英全家首頁.html"
+  },
+  {
+    "text": "張曼玲全家",
+    "href": "客戶管理/張曼玲全家/張曼玲全家首頁.html"
+  },
+  {
+    "text": "李玉鳳全家",
+    "href": "客戶管理/李玉鳳全家/李玉鳳全家首頁.html"
+  },
+  {
+    "text": "王如彬全家首頁",
+    "href": "客戶管理/王如彬全家/王如彬全家首頁.html"
+  },
+  {
+    "text": "李素碧全家",
+    "href": "https://chungpinglee.github.io/abc0480/%E7%B7%A8%E8%99%9F_A03764.html"
+  },
+  {
+    "text": "下一版",
+    "href": "https://chungpinglee.github.io/abc0480/A73361_2025-12-15.html"
+  },
+  {
+    "text": "休息一下",
+    "href": "打擊太空船.html"
+  }
+];
+
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return '';
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function saveButtonsToLocalStorage(buttonsToSave) {
+            console.log(`Saving buttons with key: ${currentLocalStorageKey}`);
+            localStorage.setItem(currentLocalStorageKey, JSON.stringify(buttonsToSave));
+        }
+
+        function loadButtonsFromLocalStorage() {
+            console.log(`Loading buttons with key: ${currentLocalStorageKey}`);
+            const savedButtons = localStorage.getItem(currentLocalStorageKey);
+            if (savedButtons) {
+                try {
+                    const parsedButtons = JSON.parse(savedButtons);
+                    return Array.isArray(parsedButtons) ? parsedButtons : JSON.parse(JSON.stringify(initialButtons));
+                } catch (e) {
+                    console.error("Error parsing stored button data, using initial:", e);
+                    return JSON.parse(JSON.stringify(initialButtons));
+                }
+            }
+            return JSON.parse(JSON.stringify(initialButtons));
+        }
+
+        function renderButtons() {
+            const buttons = loadButtonsFromLocalStorage();
+            buttonContainer.innerHTML = ''; 
+            buttons.forEach((buttonData, index) => {
+                const newButton = document.createElement('a');
+                newButton.href = buttonData.href; 
+                newButton.className = 'button-link';
+                newButton.textContent = `${index + 1}. ${escapeHtml(buttonData.text)}`;
+                buttonContainer.appendChild(newButton);
+            });
+            newButtonPositionInput.max = buttons.length + 1; 
+            removeButtonNumberInput.max = buttons.length > 0 ? buttons.length : 1; 
+            removeButtonNumberInput.placeholder = buttons.length > 0 ? "要移除的按鈕編號" : "沒有按鈕可移除";
+            if (buttons.length === 0) removeButtonNumberInput.value = '';
+        }
+
+        function handleAddNewButton() {
+            const text = newButtonTextInput.value.trim();
+            const url = newButtonUrlInput.value.trim();
+            const posStr = newButtonPositionInput.value.trim();
+            if (!text || !url) {
+                alert("按鈕文字和網址不能為空。");
+                return;
+            }
+
+            const currentButtons = loadButtonsFromLocalStorage();
+            const newButtonData = { text, href: url };
+            let position = posStr ? parseInt(posStr) : currentButtons.length + 1;
+            position = Math.max(1, Math.min(position, currentButtons.length + 1));
+
+            if (confirm(`確認新增按鈕?\n文字: ${text}\n網址: ${url}\n位置: ${position}`)) {
+                currentButtons.splice(position - 1, 0, newButtonData);
+                saveButtonsToLocalStorage(currentButtons);
+                renderButtons();
+                newButtonTextInput.value = ''; newButtonUrlInput.value = ''; newButtonPositionInput.value = '';
+                alert("按鈕已新增至目前頁面設定。\n若要將此變更保存為新檔案或更新目前檔案（透過另存），請使用「修改標題並另存」。");
+            }
+        }
+
+        function handleRemoveButton() {
+            const currentButtons = loadButtonsFromLocalStorage();
+            if (currentButtons.length === 0) {
+                alert("沒有按鈕可以移除。");
+                return;
+            }
+            const numStr = removeButtonNumberInput.value;
+            if (!numStr) {
+                alert("請輸入要移除的按鈕編號。");
+                return;
+            }
+            const num = parseInt(numStr);
+            if (isNaN(num) || num < 1 || num > currentButtons.length) {
+                alert(`無效的編號。請輸入 1 到 ${currentButtons.length}。`);
+                return;
+            }
+            if (confirm(`確認移除按鈕 "${currentButtons[num - 1].text}"?`)) {
+                currentButtons.splice(num - 1, 1);
+                saveButtonsToLocalStorage(currentButtons);
+                renderButtons();
+                removeButtonNumberInput.value = '';
+                alert("按鈕已從目前頁面設定中移除。\n若要將此變更保存為新檔案或更新目前檔案（透過另存），請使用「修改標題並另存」。");
+            }
+        }
+        
+        function savePageAs() {
+            const newTitleFromInput = newFileNameInput.value.trim();
+            const currentDocTitle = document.title; 
+            const finalNewTitle = newTitleFromInput || currentDocTitle;
+            
+            let newFileName = finalNewTitle.replace(/\s+/g, '_').replace(/[\\/:*?"<>|#%&{}]/g, '') + '.html';
+            if (newFileName.toLowerCase() === '.html' || (newFileName.startsWith('_') && newFileName.toLowerCase().endsWith('.html') && newFileName.length < 7)) {
+                newFileName = `Untitled_Menu_${new Date().getTime()}.html`;
+            }
+
+            let htmlStringToSave = document.documentElement.outerHTML;
+
+            const titleTagRegex = /(<title\b[^>]*>)([\s\S]*?)(<\/title>)/i;
+            htmlStringToSave = htmlStringToSave.replace(titleTagRegex, `$1${escapeHtml(finalNewTitle)}$3`);
+
+            if (pageMainTitleH1 && pageMainTitleH1.id) {
+                const h1Regex = new RegExp(`(<h1\\b[^>]*id="${pageMainTitleH1.id}"[^>]*>)([\\s\S]*?)(<\\/h1>)`, "i");
+                htmlStringToSave = htmlStringToSave.replace(h1Regex, `$1${escapeHtml(finalNewTitle)}$3`);
+            }
+
+            const buttonsToEmbed = loadButtonsFromLocalStorage(); 
+            const buttonsStringForEmbedding = JSON.stringify(buttonsToEmbed, null, 2);
+            const initialButtonsRegex = /const\s+initialButtons\s*=\s*(\[[\s\S]*?\])\s*;/i;
+            if (htmlStringToSave.match(initialButtonsRegex)) {
+                htmlStringToSave = htmlStringToSave.replace(initialButtonsRegex, `const initialButtons = ${buttonsStringForEmbedding};`);
+            } else {
+                console.warn("Could not find 'const initialButtons = ...;' in HTML string to update for new file.");
+            }
+            
+            const isAdminHidden = adminSectionContent.classList.contains('hidden');
+            const toggleBtnText = isAdminHidden ? '☰' : '✕';
+            htmlStringToSave = htmlStringToSave.replace(
+                /(<button\s+id="toggleAdminButton"[^>]*>)([\s\S]*?)(<\/button>)/i,
+                `$1${toggleBtnText}$3`
+            );
+            const adminSectionClassRegex = /(<div\s+class="admin-section)([^"]*?)("\s+id="adminSectionContent"[^>]*>)/i;
+            if (isAdminHidden) {
+                if (!htmlStringToSave.match(/class="admin-section hidden"/i)) {
+                     htmlStringToSave = htmlStringToSave.replace(adminSectionClassRegex, '$1 hidden$3');
+                }
+            } else {
+                 htmlStringToSave = htmlStringToSave.replace(adminSectionClassRegex, (match, p1, p2, p3) => `${p1}${p2.replace(/\s*hidden\s*/g, '')}${p3}`);
+            }
+            
+            let regeneratedButtonContainerHTML = '';
+            buttonsToEmbed.forEach((buttonData, index) => {
+                const buttonText = escapeHtml(`${index + 1}. ${buttonData.text}`);
+                const buttonHref = buttonData.href; 
+                regeneratedButtonContainerHTML += `<a href="${buttonHref}" class="button-link">${buttonText}</a>`;
+            });
+
+            const buttonContainerRegex = /(<div\s+class="button-link-container"\s+id="buttonLinkContainer">)([\s\S]*?)(<\/div>)/i;
+            if (htmlStringToSave.match(buttonContainerRegex)) {
+                htmlStringToSave = htmlStringToSave.replace(buttonContainerRegex, `$1${regeneratedButtonContainerHTML}$3`);
+            } else {
+                 console.warn("Could not find buttonLinkContainer in HTML to update its static links for saving.");
+            }
+
+            const timestamp = new Date().getTime();
+            const sanitizedTitleForNewKey = finalNewTitle.replace(/\s+/g, '_').replace(/[^\w\u4e00-\u9fa5-]/g, '');
+            const newEmbeddedLocalStorageKey = `customMenuButtons_${sanitizedTitleForNewKey || 'file'}_${timestamp}_v3`;
+            const newEmbeddedAdminPanelVisibleKey = `adminPanelVisible_${sanitizedTitleForNewKey || 'file'}_${timestamp}_v3`;
+
+            console.log(`Embedding new keys into saved file: ${newEmbeddedLocalStorageKey}, ${newEmbeddedAdminPanelVisibleKey}`);
+
+            const keyDefinitionRegex = (keyVarName) => 
+                new RegExp(`(let\\s+${keyVarName}\\s*=\\s*['"])([^'"]+)(['"]\\s*;?)`, "i");
+
+            htmlStringToSave = htmlStringToSave.replace(
+                keyDefinitionRegex('currentLocalStorageKey'), 
+                `$1${newEmbeddedLocalStorageKey}$3`
+            );
+            htmlStringToSave = htmlStringToSave.replace(
+                keyDefinitionRegex('currentAdminPanelVisibleKey'), 
+                `$1${newEmbeddedAdminPanelVisibleKey}$3`
+            );
+
+            const blob = new Blob([htmlStringToSave], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = newFileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            alert(`檔案 "${newFileName}" 已另存。\n此新檔案將擁有獨立的按鈕設定。`);
+        }
+
+
+        function toggleAdminSectionVisibility() {
+            const isHidden = adminSectionContent.classList.toggle('hidden');
+            toggleAdminButton.textContent = isHidden ? '☰' : '✕';
+            toggleAdminButton.title = isHidden ? '顯示設定區塊' : '隱藏設定區塊';
+            localStorage.setItem(currentAdminPanelVisibleKey, !isHidden); 
+        }
+
+        function loadAdminPanelState() {
+            const isVisible = localStorage.getItem(currentAdminPanelVisibleKey); 
+            if (isVisible === 'false') { 
+                adminSectionContent.classList.add('hidden');
+                toggleAdminButton.textContent = '☰';
+                toggleAdminButton.title = '顯示設定區塊';
+            } else { 
+                adminSectionContent.classList.remove('hidden');
+                toggleAdminButton.textContent = '✕';
+                toggleAdminButton.title = '隱藏設定區塊';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            newFileNameInput.value = document.title; 
+            
+            if (pageMainTitleH1) {
+                pageMainTitleH1.textContent = document.title;
+            }
+            
+            console.log(`Page loaded. Using LocalStorage Key: ${currentLocalStorageKey}, Admin Panel Key: ${currentAdminPanelVisibleKey}`);
+
+            loadAdminPanelState();
+            renderButtons();    
+            
+            if (saveAsButton) {
+                saveAsButton.addEventListener('click', function() {
+                    const targetTitle = newFileNameInput.value.trim() || document.title;
+                    if (!confirm(`確認要將目前設定另存為檔案，標題為 "${targetTitle}" 嗎？\n新儲存的檔案將會是獨立的。`)) {
+                        return;
+                    }
+                    savePageAs();
+                });
+            }
+
+            if (toggleAdminButton) {
+                toggleAdminButton.addEventListener('click', toggleAdminSectionVisibility);
+            }
+
+            // Motorcycle race speed randomization
+            const motorcycles = [
+                document.getElementById('motorcycle1'),
+                document.getElementById('motorcycle2'),
+                document.getElementById('motorcycle3'),
+                document.getElementById('motorcycle4') 
+            ].filter(Boolean); 
+
+            if (motorcycles.length > 0) {
+                const baseDurationMin = 6; 
+                const baseDurationMax = 10; 
+                const overallMinDuration = 5; 
+                const overallMaxDuration = 12; 
+
+                motorcycles.forEach(moto => {
+                    let duration = Math.random() * (baseDurationMax - baseDurationMin) + baseDurationMin;
+                    duration = Math.max(overallMinDuration, Math.min(overallMaxDuration, duration)); 
+                    moto.style.animationDuration = `${duration.toFixed(2)}s`;
+                });
+            }
+        });
+    </script>
+
+</body></html>
